@@ -2,7 +2,7 @@
 
 import DashboardLayout from "../dashboard/layout";
 
-export default function ExamGroupsLayout({
+export default function ExamsLayout({
   children,
 }: {
   children: React.ReactNode;

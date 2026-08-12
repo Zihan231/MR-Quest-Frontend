@@ -11,26 +11,35 @@ import {
   Trash2,
   BookOpen,
   Loader2,
-  GripVertical,
   CheckCircle2,
-  Circle,
-  MoreVertical,
-  X,
-  ChevronDown,
-  ChevronUp,
   Pencil,
   UploadCloud,
   FileText,
+  Video,
+  ListChecks,
+  MessageSquareText,
+  Cpu,
+  User,
+  X,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import ExamGroupEvaluationView from "./ExamGroupEvaluationView";
+
+const DocViewer = dynamic(
+  () => import("@cyntler/react-doc-viewer"),
+  { ssr: false }
+);
 
 type QuestionFormState = {
   questionText: string;
   type: string;
   options: string[];
   correctAnswers: string[];
-  marks: number;
-  accuracyMarks: number;
+  marks: string;
+  accuracyMarks: string;
   evaluationType: string;
   referenceScript: string;
   referenceFileName: string;
@@ -42,12 +51,181 @@ const emptyQuestion: QuestionFormState = {
   type: "MCQ",
   options: ["", "", "", ""],
   correctAnswers: [],
-  marks: 1,
-  accuracyMarks: 0,
+  marks: "1",
+  accuracyMarks: "0",
   evaluationType: "AI",
   referenceScript: "",
   referenceFileName: "",
   isMultipleAnswer: false,
+};
+
+const getAbsoluteDocUrl = (url: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+function DocxPreview({ url }: { url: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    console.log("Fetching docx from URL:", url);
+    fetch(url)
+      .then((res) => {
+        console.log("Fetch response status:", res.status, res.ok);
+        if (!res.ok) throw new Error("Failed to fetch document");
+        return res.blob();
+      })
+      .then((blob) => {
+        console.log("Fetched blob size:", blob.size);
+        if (!active || !containerRef.current) return;
+        console.log("Importing docx-preview...");
+        return import("docx-preview").then((docx) => {
+          console.log("Loaded docx-preview module:", docx);
+          const renderFn = docx.renderAsync || (docx as any).default?.renderAsync;
+          if (!renderFn) {
+            throw new Error("renderAsync function not found in docx-preview");
+          }
+          console.log("Rendering docx...");
+          containerRef.current!.innerHTML = "";
+          return renderFn(blob, containerRef.current!, undefined, {
+            inWrapper: true,
+            ignoreWidth: false,
+            ignoreHeight: false,
+            ignoreFonts: false,
+            breakPages: true,
+          }).then(() => {
+            console.log("Render complete!");
+          });
+        });
+      })
+      .then(() => {
+        if (active) {
+          console.log("Setting loading to false");
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Docx render error:", err);
+        if (active) {
+          setError(err.message || "Failed to load/render Word document");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
+  return (
+    <div className="p-4 overflow-auto h-full w-full bg-slate-100 dark:bg-zinc-900 min-h-[350px]">
+      <style dangerouslySetInnerHTML={{__html: `
+        .docx-container-white {
+          background-color: #f1f5f9 !important;
+          color: #000000 !important;
+          border-radius: 8px !important;
+          width: 100% !important;
+        }
+        .docx-container-white * {
+          color: #000000 !important;
+          border-color: #e2e8f0 !important;
+        }
+        .docx-wrapper {
+          background: #f1f5f9 !important;
+          padding: 24px 16px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: flex-start !important;
+        }
+        .docx {
+          background: white !important;
+          color: black !important;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+          padding: 32px 24px !important;
+          margin-bottom: 24px !important;
+          display: block !important;
+        }
+      `}} />
+
+      {loading && (
+        <div className="flex flex-col items-center justify-center gap-3 py-20 bg-slate-100 dark:bg-zinc-900 rounded-lg">
+          <Loader2 className="animate-spin text-blue-600 dark:text-blue-500" size={32} />
+          <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Parsing reference document...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+          <p className="text-sm text-red-500 font-semibold">{error}</p>
+          <a href={url} download className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow transition mt-2">
+            Download File Directly
+          </a>
+        </div>
+      )}
+
+      <div ref={containerRef} className={`mx-auto docx-container-white ${loading || error ? "hidden" : "block"}`} />
+    </div>
+  );
+}
+
+const renderFileViewer = (url: string) => {
+  if (!url) return null;
+  
+  // Check if it's a URL or relative path, otherwise treat as plain text script
+  const isUrl = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
+  const hasFileExtension = /\.(pdf|docx|doc|pptx|ppt|png|jpg|jpeg|gif)$/i.test(url);
+  
+  if (!isUrl && !hasFileExtension) {
+    return (
+      <div className="p-6 overflow-auto h-full w-full bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200">
+        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">{url}</p>
+      </div>
+    );
+  }
+
+  const lowercaseUrl = url.toLowerCase();
+  
+  if (lowercaseUrl.endsWith(".docx") || lowercaseUrl.endsWith(".doc")) {
+    return <DocxPreview url={url} />;
+  }
+  
+  if (lowercaseUrl.endsWith(".pdf") || lowercaseUrl.endsWith(".png") || lowercaseUrl.endsWith(".jpg") || lowercaseUrl.endsWith(".jpeg") || lowercaseUrl.endsWith(".gif")) {
+    return (
+      <iframe
+        src={url}
+        className="w-full h-full border-0"
+        title="Reference Doc Preview"
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center bg-slate-50 dark:bg-zinc-950">
+      <FileText size={48} className="text-slate-300 dark:text-zinc-700 animate-pulse" />
+      <div>
+        <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">Office Document Preview</p>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-xs">
+          This file format is not supported for inline preview. Please download the file to view it.
+        </p>
+      </div>
+      <a
+        href={url}
+        download
+        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow transition"
+      >
+        Download Document
+      </a>
+    </div>
+  );
 };
 
 export default function ManageExamGroupPage() {
@@ -66,8 +244,6 @@ export default function ManageExamGroupPage() {
 
   const [newQuestion, setNewQuestion] = useState<QuestionFormState>(emptyQuestion);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
-  const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(null);
-  
   const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
   const [editQuestion, setEditQuestion] = useState<QuestionFormState>(emptyQuestion);
   const [isSavingQuestionId, setIsSavingQuestionId] = useState<number | null>(null);
@@ -80,6 +256,16 @@ export default function ManageExamGroupPage() {
     status: "",
   });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [previewingDocId, setPreviewingDocId] = useState<number | null>(null);
+  const [minimizedDocIds, setMinimizedDocIds] = useState<Record<number, boolean>>({});
+  const [isFullscreenDocId, setIsFullscreenDocId] = useState<number | null>(null);
+
+  const toggleDocMinimize = (id: number) => {
+    setMinimizedDocIds(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
@@ -183,9 +369,9 @@ export default function ManageExamGroupPage() {
       questionText: q.questionText || "",
       options: q.options || ["", "", "", ""],
       correctAnswers: q.correctAnswers || [],
-      marks: q.marks || 1,
+      marks: String(q.marks ?? 1),
       type: q.type || "MCQ",
-      accuracyMarks: q.accuracyMarks || 0,
+      accuracyMarks: String(q.accuracyMarks ?? q.marks ?? 0),
       evaluationType: q.evaluationType || "AI",
       referenceScript: q.referenceScript || "",
       referenceFileName: q.referenceScript ? q.referenceScript.split('/').pop() : "",
@@ -202,6 +388,21 @@ export default function ManageExamGroupPage() {
     return res.data.url;
   };
 
+  const toSafeString = (value: unknown): string =>
+    value === null || value === undefined ? "" : String(value);
+
+  const isValidNumber = (value: unknown): boolean => {
+    const str = toSafeString(value);
+    return str.trim() !== "" && !isNaN(Number(value));
+  };
+
+  const numericInputClass = (value: unknown, min: number, baseClass: string): string =>
+    `${baseClass} ${
+      toSafeString(value) !== "" && (!isValidNumber(value) || Number(value) < min)
+        ? "border-red-500 dark:border-red-500"
+        : "border-slate-200 dark:border-zinc-800"
+    }`;
+
   const handleAddQuestion = async (keepOpen: boolean) => {
     if (!examGroupId) return;
 
@@ -210,8 +411,19 @@ export default function ManageExamGroupPage() {
       return;
     }
 
-    if (newQuestion.type === 'Video' && questions.some((q) => q.type === 'Video')) {
-      toast.error("Only one Video question is allowed per exam.");
+    if (newQuestion.type === 'Video') {
+      const videoMarksValid = ["accuracyMarks"].every(
+        (key) => {
+          const value = newQuestion[key as keyof QuestionFormState];
+          return isValidNumber(value) && Number(value) >= 0;
+        },
+      );
+      if (!videoMarksValid) {
+        toast.error("Accuracy marks must be a valid number (0 or more).");
+        return;
+      }
+    } else if (!isValidNumber(newQuestion.marks) || Number(newQuestion.marks) < 1) {
+      toast.error("Total marks must be a valid number greater than 0.");
       return;
     }
 
@@ -253,7 +465,9 @@ export default function ManageExamGroupPage() {
               type: newQuestion.type,
               options: newQuestion.type === 'MCQ' ? filledOptions : [],
               correctAnswers: newQuestion.type === 'MCQ' ? newQuestion.correctAnswers : [],
-              marks: newQuestion.marks,
+              marks: newQuestion.type === 'Video'
+                ? (Number(newQuestion.accuracyMarks) || 0)
+                : newQuestion.marks,
               accuracyMarks: newQuestion.type === 'Video' ? newQuestion.accuracyMarks : 0,
               evaluationType: newQuestion.evaluationType,
               referenceScript: newQuestion.referenceScript || undefined,
@@ -299,6 +513,21 @@ export default function ManageExamGroupPage() {
       toast.error("Question text is required.");
       return;
     }
+    if (editQuestion.type === 'Video') {
+      const videoMarksValid = ["accuracyMarks"].every(
+        (key) => {
+          const value = editQuestion[key as keyof QuestionFormState];
+          return isValidNumber(value) && Number(value) >= 0;
+        },
+      );
+      if (!videoMarksValid) {
+        toast.error("Accuracy marks must be a valid number (0 or more).");
+        return;
+      }
+    } else if (!isValidNumber(editQuestion.marks) || Number(editQuestion.marks) < 1) {
+      toast.error("Total marks must be a valid number greater than 0.");
+      return;
+    }
     if ((editQuestion.type === 'CQ' || editQuestion.type === 'Video') && editQuestion.evaluationType === 'AI' && !editQuestion.referenceScript) {
       toast.error("A reference document is required for AI-evaluated questions.");
       return;
@@ -313,7 +542,7 @@ export default function ManageExamGroupPage() {
           options: editQuestion.type === 'MCQ' ? filledOptions : undefined,
           correctAnswers: editQuestion.type === 'MCQ' ? editQuestion.correctAnswers : undefined,
           marks: editQuestion.type === 'Video'
-            ? Number(editQuestion.accuracyMarks) || 0
+            ? (Number(editQuestion.accuracyMarks) || 0)
             : editQuestion.marks,
           accuracyMarks: editQuestion.type === 'Video' ? editQuestion.accuracyMarks : undefined,
           evaluationType: editQuestion.type === 'MCQ' ? undefined : editQuestion.evaluationType,
@@ -460,7 +689,7 @@ export default function ManageExamGroupPage() {
           {/* QUESTIONS TAB */}
           {activeTab === "questions" && (
             <div className="flex flex-col gap-4 animate-fadeIn">
-              {/* Add Question Card - Google Forms Style */}
+              {/* Add Question Card */}
               {!showAddForm ? (
                 <button
                   onClick={() => setShowAddForm(true)}
@@ -487,17 +716,44 @@ export default function ManageExamGroupPage() {
                     </button>
                   </div>
                   <div className="p-6 pb-2 mt-4 flex flex-col gap-3">
-                    <select
-                      value={newQuestion.type}
-                      onChange={(e) =>
-                        setNewQuestion({ ...newQuestion, type: e.target.value })
-                      }
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm font-semibold focus:outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                    >
-                      <option value="MCQ">Multiple Choice Question (MCQ)</option>
-                      <option value="CQ">Creative Question (CQ)</option>
-                      <option value="Video">Video Response</option>
-                    </select>
+                    <div className="grid grid-cols-3 gap-2.5 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewQuestion({ ...newQuestion, type: "MCQ" })}
+                        className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                          newQuestion.type === "MCQ"
+                            ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        <ListChecks size={15} />
+                        MCQ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewQuestion({ ...newQuestion, type: "CQ" })}
+                        className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                          newQuestion.type === "CQ"
+                            ? "bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-500/25"
+                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        <MessageSquareText size={15} />
+                        Creative (CQ)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewQuestion({ ...newQuestion, type: "Video" })}
+                        className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                          newQuestion.type === "Video"
+                            ? "bg-red-600 border-red-600 text-white shadow-md shadow-red-500/25"
+                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        <Video size={15} />
+                        Video
+                      </button>
+                    </div>
 
                     <textarea
                       required
@@ -584,16 +840,34 @@ export default function ManageExamGroupPage() {
 
                   {newQuestion.type === 'Video' && (
                     <div className="px-6 py-4 flex flex-col gap-4">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
-                        <select
-                          value={newQuestion.evaluationType}
-                          onChange={(e) => setNewQuestion({ ...newQuestion, evaluationType: e.target.value })}
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                        >
-                          <option value="AI">AI Evaluation</option>
-                          <option value="Manual">Manual Evaluation</option>
-                        </select>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "AI" })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                              newQuestion.evaluationType === "AI"
+                                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            <Cpu size={15} />
+                            AI Evaluation
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "Manual" })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                              newQuestion.evaluationType === "Manual"
+                                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            <User size={15} />
+                            Manual Evaluation
+                          </button>
+                        </div>
                       </div>
 
                       {newQuestion.evaluationType === 'AI' && (
@@ -608,11 +882,11 @@ export default function ManageExamGroupPage() {
                         <div className="flex flex-col gap-1">
                           <label className="text-[10px] font-bold text-slate-500 uppercase">Script Accuracy Marks</label>
                           <input
-                            type="number"
-                            min="0"
+                            type="text"
+                            inputMode="decimal"
                             value={newQuestion.accuracyMarks}
-                            onChange={(e) => setNewQuestion({ ...newQuestion, accuracyMarks: Number(e.target.value) })}
-                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
+                            onChange={(e) => setNewQuestion({ ...newQuestion, accuracyMarks: e.target.value })}
+                            className={numericInputClass(newQuestion.accuracyMarks, 0, "w-full rounded-xl border bg-white py-2 px-3 text-sm focus:outline-none dark:bg-zinc-900")}
                           />
                         </div>
                       </div>
@@ -621,16 +895,34 @@ export default function ManageExamGroupPage() {
 
                   {newQuestion.type === 'CQ' && (
                     <div className="px-6 py-4 flex flex-col gap-4">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
-                        <select
-                          value={newQuestion.evaluationType}
-                          onChange={(e) => setNewQuestion({ ...newQuestion, evaluationType: e.target.value })}
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                        >
-                          <option value="AI">AI Evaluation</option>
-                          <option value="Manual">Manual Evaluation</option>
-                        </select>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "AI" })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                              newQuestion.evaluationType === "AI"
+                                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            <Cpu size={15} />
+                            AI Evaluation
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "Manual" })}
+                            className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                              newQuestion.evaluationType === "Manual"
+                                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            <User size={15} />
+                            Manual Evaluation
+                          </button>
+                        </div>
                       </div>
                       {newQuestion.evaluationType === 'AI' && (
                         <AddRefDocInput
@@ -643,21 +935,27 @@ export default function ManageExamGroupPage() {
                   )}
 
                   <div className="bg-slate-50 dark:bg-zinc-950/50 border-t border-slate-100 dark:border-zinc-800 p-4 px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Marks</span>
-                      <input
-                        type="number"
-                        min="1"
-                        value={newQuestion.marks}
-                        onChange={(e) =>
-                          setNewQuestion({
-                            ...newQuestion,
-                            marks: Number(e.target.value) || 1,
-                          })
-                        }
-                        className="w-16 rounded-lg border border-slate-200 bg-white py-1.5 px-3 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 text-center font-bold shadow-sm"
-                      />
-                    </div>
+                    {newQuestion.type !== 'Video' ? (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Marks</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={newQuestion.marks}
+                          onChange={(e) =>
+                            setNewQuestion({
+                              ...newQuestion,
+                              marks: e.target.value,
+                            })
+                          }
+                          className={numericInputClass(newQuestion.marks, 1, "w-16 rounded-lg border bg-white py-1.5 px-3 text-sm focus:border-blue-500 focus:outline-none dark:bg-zinc-900 text-center font-bold shadow-sm")}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                        Total Marks: {(Number(newQuestion.accuracyMarks) || 0)}
+                      </div>
+                    )}
 
                     <div className="flex flex-wrap gap-2 justify-end mt-4 sm:mt-0 w-full sm:w-auto">
                       <button
@@ -746,7 +1044,12 @@ export default function ManageExamGroupPage() {
                                   <button
                                     type="button"
                                     onClick={() => toggleEditCorrectAnswer(optIdx)}
-                                    className={`shrink-0 flex items-center justify-center border transition ${editQuestion.isMultipleAnswer ? "w-5 h-5 rounded" : "w-5 h-5 rounded-full"} ${isCorrect ? "bg-green-500 border-green-500 text-white" : "border-slate-300 dark:border-zinc-700 hover:border-blue-400"}`}>
+                                    className={`shrink-0 flex items-center justify-center border transition ${
+                                      editQuestion.isMultipleAnswer ? "w-5 h-5 rounded" : "w-5 h-5 rounded-full"
+                                    } ${
+                                      isCorrect ? "bg-green-500 border-green-500 text-white" : "border-slate-300 dark:border-zinc-700 hover:border-blue-400"
+                                    }`}
+                                  >
                                     {isCorrect && <CheckCircle2 size={12} />}
                                   </button>
                                   <input
@@ -768,16 +1071,34 @@ export default function ManageExamGroupPage() {
 
                         {(editQuestion.type === 'CQ' || editQuestion.type === 'Video') && (
                           <>
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1.5">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Evaluation Mode</label>
-                              <select
-                                value={editQuestion.evaluationType}
-                                onChange={(e) => setEditQuestion({ ...editQuestion, evaluationType: e.target.value })}
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                              >
-                                <option value="AI">AI Evaluation</option>
-                                <option value="Manual">Manual Evaluation</option>
-                              </select>
+                              <div className="grid grid-cols-2 gap-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditQuestion({ ...editQuestion, evaluationType: "AI" })}
+                                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                                    editQuestion.evaluationType === "AI"
+                                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                                  }`}
+                                >
+                                  <Cpu size={15} />
+                                  AI Evaluation
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditQuestion({ ...editQuestion, evaluationType: "Manual" })}
+                                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition-all ${
+                                    editQuestion.evaluationType === "Manual"
+                                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25"
+                                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                                  }`}
+                                >
+                                  <User size={15} />
+                                  Manual Evaluation
+                                </button>
+                              </div>
                             </div>
                             {editQuestion.evaluationType === 'AI' && (
                               <AddRefDocInput
@@ -793,20 +1114,26 @@ export default function ManageExamGroupPage() {
                           <div className="grid grid-cols-1 gap-3">
                             <div className="flex flex-col gap-1">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Script Accuracy Marks</label>
-                              <input type="number" min="0" value={editQuestion.accuracyMarks} onChange={(e) => setEditQuestion({ ...editQuestion, accuracyMarks: Number(e.target.value) })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900" />
+                              <input type="text" inputMode="decimal" value={editQuestion.accuracyMarks} onChange={(e) => setEditQuestion({ ...editQuestion, accuracyMarks: e.target.value })} className={numericInputClass(editQuestion.accuracyMarks, 0, "w-full rounded-xl border bg-white py-2 px-3 text-xs focus:outline-none dark:bg-zinc-900")} />
                             </div>
                           </div>
                         )}
-                        <div className="flex flex-col gap-1 w-1/3">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Marks</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={editQuestion.marks}
-                            onChange={(e) => setEditQuestion({ ...editQuestion, marks: Number(e.target.value) })}
-                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
-                          />
-                        </div>
+                        {editQuestion.type !== 'Video' ? (
+                          <div className="flex flex-col gap-1 w-1/3">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Marks</label>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={editQuestion.marks}
+                              onChange={(e) => setEditQuestion({ ...editQuestion, marks: e.target.value })}
+                              className={numericInputClass(editQuestion.marks, 1, "w-full rounded-xl border bg-white py-2 px-3 text-xs focus:outline-none dark:bg-zinc-900")}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                            Total Marks: {(Number(editQuestion.accuracyMarks) || 0)}
+                          </div>
+                        )}
                         <div className="flex justify-end mt-2">
                           <button
                             onClick={handleEditQuestion}
@@ -822,8 +1149,14 @@ export default function ManageExamGroupPage() {
                       <>
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <span className="bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide">
-                              MCQ
+                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide ${
+                              q.type === 'MCQ'
+                                ? 'bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+                                : q.type === 'CQ'
+                                ? 'bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+                                : 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400'
+                            }`}>
+                              {q.type}
                             </span>
                             <span className="text-slate-500 dark:text-zinc-500 text-xs font-bold tracking-wider">
                               Q{idx + 1}
@@ -857,30 +1190,145 @@ export default function ManageExamGroupPage() {
                           Marks: {q.marks}
                         </p>
 
-                        <div className="flex flex-col gap-2.5">
-                          {(q.options || []).map((opt: string, optIdx: number) => {
-                            const isCorrect = (q.correctAnswers || []).includes(`option_${optIdx}`);
-                            return (
-                              <div
-                                key={optIdx}
-                                className={`flex items-center justify-between p-3.5 rounded-xl border transition-colors ${isCorrect ? "border-green-500/30 bg-green-50/50 dark:border-green-500/20 dark:bg-green-950/10" : "border-slate-200 dark:border-zinc-800/80 bg-transparent hover:border-slate-300 dark:hover:border-zinc-700"}`}>
-                                <div className="flex items-center gap-3.5">
-                                  <div className={`w-5 h-5 shrink-0 rounded flex items-center justify-center border transition-colors ${isCorrect ? "bg-green-500 border-green-500 text-white shadow-sm" : "border-slate-300 dark:border-zinc-700 bg-transparent"}`}>
-                                    {isCorrect && <CheckCircle2 size={12} strokeWidth={3} />}
+                        {q.type === 'MCQ' && (
+                          <div className="flex flex-col gap-2.5">
+                            {(q.options || []).map((opt: string, optIdx: number) => {
+                              const isCorrect = (q.correctAnswers || []).includes(`option_${optIdx}`);
+                              return (
+                                <div
+                                  key={optIdx}
+                                  className={`flex items-center justify-between p-3.5 rounded-xl border transition-colors ${
+                                    isCorrect
+                                      ? "border-green-500/30 bg-green-50/50 dark:border-green-500/20 dark:bg-green-950/10"
+                                      : "border-slate-200 dark:border-zinc-800/80 bg-transparent hover:border-slate-300 dark:hover:border-zinc-700"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3.5">
+                                    <div className={`w-5 h-5 shrink-0 rounded flex items-center justify-center border transition-colors ${
+                                      isCorrect
+                                        ? "bg-green-500 border-green-500 text-white shadow-sm"
+                                        : "border-slate-300 dark:border-zinc-700 bg-transparent"
+                                    }`}>
+                                      {isCorrect && <CheckCircle2 size={12} strokeWidth={3} />}
+                                    </div>
+                                    <span className={`text-base font-medium ${isCorrect ? "text-green-700 dark:text-green-400" : "text-slate-700 dark:text-zinc-300"}`}>
+                                      {opt}
+                                    </span>
                                   </div>
-                                  <span className={`text-base font-medium ${isCorrect ? "text-green-700 dark:text-green-400" : "text-slate-700 dark:text-zinc-300"}`}>
-                                    {opt}
-                                  </span>
+                                  {isCorrect && (
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-green-600 dark:text-green-500 pl-3">
+                                      Correct
+                                    </span>
+                                  )}
                                 </div>
-                                {isCorrect && (
-                                  <span className="text-[10px] uppercase tracking-wider font-bold text-green-600 dark:text-green-500 pl-3">
-                                    Correct
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {q.type === 'Video' && (
+                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-slate-500 dark:text-zinc-400">Evaluation Mode:</span>
+                              <span className="font-bold text-slate-800 dark:text-zinc-200">{q.evaluationType} Evaluation</span>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 text-center text-xs">
+                              <div className="bg-white dark:bg-zinc-900 p-2 rounded-lg border border-slate-100 dark:border-zinc-800/80">
+                                <p className="text-[10px] text-slate-400 uppercase font-bold">Script Accuracy</p>
+                                <p className="font-bold text-slate-800 dark:text-zinc-200 mt-0.5">{q.accuracyMarks ?? q.marks} m</p>
+                              </div>
+                            </div>
+                            {q.evaluationType === 'AI' && q.referenceScript && (
+                              <div className="mt-1 flex flex-col gap-2">
+                                <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/10 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/20 text-xs">
+                                  <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
+                                    <FileText size={14} /> Reference Doc
                                   </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleDocMinimize(q.id)}
+                                    className="px-3 py-1 rounded-md text-[10px] font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm"
+                                  >
+                                    {minimizedDocIds[q.id] ? "Maximize" : "Minimize"}
+                                  </button>
+                                </div>
+                                {!minimizedDocIds[q.id] && (
+                                  <div className={`border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-950 flex flex-col transition-all ${
+                                    isFullscreenDocId === q.id 
+                                      ? "fixed inset-0 z-[100] h-screen w-screen p-4 bg-black/80 backdrop-blur-md" 
+                                      : "h-[450px] w-full"
+                                  }`}>
+                                    <div className="bg-slate-200 dark:bg-zinc-900 px-4 py-2 flex items-center justify-between border-b border-slate-300 dark:border-zinc-800 shrink-0">
+                                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                        <FileText size={14} /> Reference Doc Preview
+                                      </span>
+                                    </div>
+                                    <div className="flex-1 overflow-auto h-full w-full bg-white relative">
+                                      {renderFileViewer(getAbsoluteDocUrl(q.referenceScript))}
+                                      <button
+                                        type="button"
+                                        onClick={() => setIsFullscreenDocId(prev => prev === q.id ? null : q.id)}
+                                        className="absolute bottom-4 right-4 z-10 p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition flex items-center justify-center border border-blue-500 hover:scale-105"
+                                        title={isFullscreenDocId === q.id ? "Exit Fullscreen" : "Fullscreen"}
+                                      >
+                                        {isFullscreenDocId === q.id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
                               </div>
-                            );
-                          })}
-                        </div>
+                            )}
+                          </div>
+                        )}
+
+                        {q.type === 'CQ' && (
+                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-slate-500 dark:text-zinc-400">Evaluation Mode:</span>
+                              <span className="font-bold text-slate-800 dark:text-zinc-200">{q.evaluationType} Evaluation</span>
+                            </div>
+                            {q.evaluationType === 'AI' && q.referenceScript && (
+                              <div className="mt-1 flex flex-col gap-2">
+                                <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/10 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/20 text-xs">
+                                  <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
+                                    <FileText size={14} /> Reference Doc
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleDocMinimize(q.id)}
+                                    className="px-3 py-1 rounded-md text-[10px] font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm"
+                                  >
+                                    {minimizedDocIds[q.id] ? "Maximize" : "Minimize"}
+                                  </button>
+                                </div>
+                                {!minimizedDocIds[q.id] && (
+                                  <div className={`border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-950 flex flex-col transition-all ${
+                                    isFullscreenDocId === q.id 
+                                      ? "fixed inset-0 z-[100] h-screen w-screen p-4 bg-black/80 backdrop-blur-md" 
+                                      : "h-[450px] w-full"
+                                  }`}>
+                                    <div className="bg-slate-200 dark:bg-zinc-900 px-4 py-2 flex items-center justify-between border-b border-slate-300 dark:border-zinc-800 shrink-0">
+                                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                        <FileText size={14} /> Reference Doc Preview
+                                      </span>
+                                    </div>
+                                    <div className="flex-1 overflow-auto h-full w-full bg-white relative">
+                                      {renderFileViewer(getAbsoluteDocUrl(q.referenceScript))}
+                                      <button
+                                        type="button"
+                                        onClick={() => setIsFullscreenDocId(prev => prev === q.id ? null : q.id)}
+                                        className="absolute bottom-4 right-4 z-10 p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition flex items-center justify-center border border-blue-500 hover:scale-105"
+                                        title={isFullscreenDocId === q.id ? "Exit Fullscreen" : "Fullscreen"}
+                                      >
+                                        {isFullscreenDocId === q.id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -1023,6 +1471,7 @@ export default function ManageExamGroupPage() {
       {viewingSubmission && (
         <ExamGroupEvaluationView
           submission={viewingSubmission}
+          examGroupId={examGroupId}
           onClose={() => setViewingSubmission(null)}
           onEvaluated={() => {
             // refresh submissions
@@ -1036,8 +1485,27 @@ export default function ManageExamGroupPage() {
   );
 }
 
-function AddRefDocInput({ state, setState, onUpload }: { state: { referenceScript: string; referenceFileName: string; evaluationType: string }; setState: (patch: Partial<{ referenceScript: string; referenceFileName: string; evaluationType: string }>) => void; onUpload: (file: File) => Promise<string> }) {
+function AddRefDocInput({
+  state,
+  setState,
+  onUpload,
+}: {
+  state: {
+    referenceScript: string;
+    referenceFileName: string;
+    evaluationType: string;
+  };
+  setState: (patch: Partial<{ referenceScript: string; referenceFileName: string; evaluationType: string }>) => void;
+  onUpload: (file: File) => Promise<string>;
+}) {
   const [uploading, setUploading] = useState(false);
+  
+  // Infer if the current referenceScript is a file URL or raw text script
+  const isUrl = state.referenceScript?.startsWith("http://") || 
+                state.referenceScript?.startsWith("https://") || 
+                state.referenceScript?.startsWith("/") || 
+                (state.referenceScript?.length > 0 && state.referenceScript.includes("."));
+  const [isTextMode, setIsTextMode] = useState(!isUrl && state.referenceScript ? true : false);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1056,25 +1524,65 @@ function AddRefDocInput({ state, setState, onUpload }: { state: { referenceScrip
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Reference Document (PDF / DOC / DOCX) *</label>
-      <p className="text-[10px] text-slate-500 -mt-0.5">Gives the AI context to grade answers. Students cannot see it.</p>
-      <div className="flex items-center gap-2">
-        <label className="relative flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600 bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-300 font-bold px-4 py-2 text-xs transition cursor-pointer">
-          <input type="file" accept=".pdf,.doc,.docx" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFile} disabled={uploading} />
-          {uploading ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
-          {uploading ? "Uploading..." : state.referenceScript ? "Replace document" : "Upload document"}
-        </label>
-        {state.referenceScript && (
-          <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg border border-blue-100 dark:border-blue-900/30">
-            <FileText size={14} />
-            <span className="truncate max-w-[200px]">{state.referenceFileName || state.referenceScript.split('/').pop()}</span>
-            <button type="button" onClick={() => setState({ referenceScript: "", referenceFileName: "" })} className="text-slate-400 hover:text-red-500 transition p-0.5">
-              <X size={13} />
-            </button>
-          </div>
-        )}
+    <div className="flex flex-col gap-2 bg-slate-50/50 dark:bg-zinc-950/20 p-4 rounded-xl border border-slate-200/60 dark:border-zinc-800/60">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Reference Document/Script *</label>
+          <p className="text-[9px] text-slate-500 mt-0.5">Gives the AI context to grade answers. Students cannot see it.</p>
+        </div>
+        
+        {/* Toggle Mode Button Group */}
+        <div className="flex bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg shrink-0 border border-slate-200/50 dark:border-zinc-700/50">
+          <button
+            type="button"
+            onClick={() => {
+              setIsTextMode(false);
+              setState({ referenceScript: "", referenceFileName: "" });
+            }}
+            className={`px-3 py-1 text-[9px] font-bold rounded-md transition ${!isTextMode ? "bg-white shadow-sm text-slate-800 dark:bg-zinc-700 dark:text-zinc-50" : "text-slate-500 dark:text-zinc-400"}`}
+          >
+            File Mode
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsTextMode(true);
+              setState({ referenceScript: "", referenceFileName: "" });
+            }}
+            className={`px-3 py-1 text-[9px] font-bold rounded-md transition ${isTextMode ? "bg-white shadow-sm text-slate-800 dark:bg-zinc-700 dark:text-zinc-50" : "text-slate-500 dark:text-zinc-400"}`}
+          >
+            Text Mode
+          </button>
+        </div>
       </div>
+
+      {isTextMode ? (
+        <textarea
+          required
+          rows={4}
+          value={state.referenceScript || ""}
+          onChange={(e) => setState({ referenceScript: e.target.value, referenceFileName: "Plain Text Script" })}
+          placeholder="Paste or write the reference script/text here..."
+          className="w-full bg-white dark:bg-zinc-900 text-xs font-medium text-slate-800 dark:text-zinc-200 rounded-xl border border-slate-200 dark:border-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition p-3 resize-none outline-none mt-1 shadow-inner"
+        />
+      ) : (
+        <div className="flex items-center gap-2 mt-1">
+          <label className="relative flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 font-bold px-4 py-2.5 text-xs transition cursor-pointer">
+            <input type="file" accept=".pdf,.doc,.docx" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFile} disabled={uploading} />
+            {uploading ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
+            {uploading ? "Uploading..." : state.referenceScript ? "Replace document" : "Upload document"}
+          </label>
+          {state.referenceScript && (
+            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-2.5 rounded-lg border border-blue-100 dark:border-blue-900/30">
+              <FileText size={14} />
+              <span className="truncate max-w-[200px]">{state.referenceFileName || state.referenceScript.split('/').pop()}</span>
+              <button type="button" onClick={() => setState({ referenceScript: "", referenceFileName: "" })} className="text-slate-400 hover:text-red-500 transition p-0.5">
+                <X size={13} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

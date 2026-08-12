@@ -8,8 +8,8 @@ const geistSans = { variable: "--font-geist-sans" };
 const geistMono = { variable: "--font-geist-mono" };
 
 export const metadata: Metadata = {
-  title: "TrainXcel | Enterprise LMS",
-  description: "A robust Learning & Training Management System",
+  title: "MrQuest | Exam Platform",
+  description: "An enterprise exam & assessment platform",
 };
 
 import { Toaster } from "react-hot-toast";

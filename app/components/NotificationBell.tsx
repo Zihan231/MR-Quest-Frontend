@@ -7,12 +7,6 @@ import io from "socket.io-client";
 
 function normalizeActionLink(link?: string | null): string | null {
   if (!link) return null;
-  if (link.startsWith("/courses/")) {
-    return `/dashboard/learn${link.replace("/courses", "")}`;
-  }
-  if (link === "/dashboard?tab=courses") {
-    return "/dashboard?tab=manage-courses";
-  }
   return link;
 }
 

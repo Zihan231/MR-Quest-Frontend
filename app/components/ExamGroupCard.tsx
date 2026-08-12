@@ -1,26 +1,24 @@
 import { ExamGroup } from "@/hooks/useExamGroups";
-import { Clock, Users, FileText, BookOpen, Trash2 } from "lucide-react";
+import { Users, FileText, BookOpen, Trash2, Play, CheckCircle2 } from "lucide-react";
 
 interface ExamGroupCardProps {
   examGroup: ExamGroup;
-  onClick?: () => void;
+  onTake?: () => void;
   onManage?: () => void;
-  onJoin?: () => void;
   onDelete?: () => void;
+  onStatusChange?: (newStatus: "active" | "draft") => void;
   showActions?: boolean;
   userRole?: string;
-  isEnrolled?: boolean;
 }
 
 export function ExamGroupCard({
   examGroup,
-  onClick,
+  onTake,
   onManage,
-  onJoin,
   onDelete,
+  onStatusChange,
   showActions = true,
   userRole = "user",
-  isEnrolled = false,
 }: ExamGroupCardProps) {
   const statusColors: Record<string, string> = {
     draft: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
@@ -28,15 +26,6 @@ export function ExamGroupCard({
     completed: "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30",
     cancelled: "bg-red-50 text-red-600 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30",
   };
-
-  const formatDateTime = (dateStr: string | null) => {
-    if (!dateStr) return "Not set";
-    const d = new Date(dateStr);
-    return d.toLocaleString();
-  };
-
-  const totalMins = examGroup.timePerQuestion ?? null;
-  const isEnded = examGroup.endTime ? new Date(examGroup.endTime).getTime() < new Date().getTime() : false;
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition flex flex-col">
@@ -52,14 +41,30 @@ export function ExamGroupCard({
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${isEnded ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700" : statusColors[examGroup.status] || statusColors.draft}`}>
-              {isEnded ? "Ended" : examGroup.status}
-            </span>
+            {userRole !== "user" && onStatusChange ? (
+              <select
+                value={examGroup.status}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => onStatusChange(e.target.value as "active" | "draft")}
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border cursor-pointer focus:outline-none transition-colors ${
+                  examGroup.status === "active"
+                    ? "bg-green-50 text-green-600 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30"
+                    : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
+                }`}
+              >
+                <option value="draft" className="bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300">Draft</option>
+                <option value="active" className="bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300">Active</option>
+              </select>
+            ) : (
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${statusColors[examGroup.status] || statusColors.draft}`}>
+                {examGroup.status}
+              </span>
+            )}
             {userRole === "admin" && onDelete && (
               <button 
                 onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition dark:hover:bg-red-950/30"
-                title="Delete Exam Group"
+                title="Delete Exam"
               >
                 <Trash2 size={16} />
               </button>
@@ -76,21 +81,6 @@ export function ExamGroupCard({
             <FileText size={12} className="text-blue-500" />
             {examGroup.totalQuestions ?? 0} questions
           </span>
-          <span className="flex items-center gap-1">
-            <Users size={12} className="text-purple-500" />
-            {examGroup.totalStudents} enrolled
-          </span>
-          {totalMins && (
-            <span className="flex items-center gap-1">
-              <Clock size={12} className="text-amber-500" />
-              {totalMins} min
-            </span>
-          )}
-        </div>
-
-        <div className="text-[11px] text-slate-400 dark:text-zinc-500 flex flex-col gap-0.5">
-          <span>Starts: {formatDateTime(examGroup.startTime)}</span>
-          <span>Ends: {formatDateTime(examGroup.endTime)}</span>
         </div>
       </div>
 
@@ -104,26 +94,38 @@ export function ExamGroupCard({
               <BookOpen size={12} /> Manage
             </button>
           )}
-          {userRole === "user" && !isEnded && !isEnrolled && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onJoin?.(); }}
-              disabled={examGroup.status !== "active"}
-              className="flex items-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-bold transition"
-            >
-              Join Exam
-            </button>
+          {userRole === "user" && (
+            (examGroup as any).hasSubmitted ? (
+              (examGroup as any).isPending ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-lg border border-amber-100 dark:border-amber-900/30 uppercase tracking-wider">
+                    Pending
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onTake?.(); }}
+                    className="flex items-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-bold transition shadow-sm"
+                  >
+                    Review Answers
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onTake?.(); }}
+                  className="flex items-center gap-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs font-bold transition shadow-sm"
+                >
+                  <CheckCircle2 size={12} /> View Results
+                </button>
+              )
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); onTake?.(); }}
+                disabled={examGroup.status !== "active"}
+                className="flex items-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-bold transition"
+              >
+                <Play size={12} /> Take Exam
+              </button>
+            )
           )}
-          {userRole === "user" && isEnded && (
-            <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 px-2 py-1.5">
-              Exam Ended
-            </span>
-          )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-            className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-zinc-800 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
-          >
-            View
-          </button>
         </div>
       )}
     </div>

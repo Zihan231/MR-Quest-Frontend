@@ -18,13 +18,7 @@ import {
 import { toast } from "react-hot-toast";
 
 const TARGET_TYPES = [
-  "Course",
-  "Lesson",
-  "Test",
-  "Submission",
-  "Category",
   "User",
-  "RecycleBin",
 ];
 
 function formatKey(key: string) {

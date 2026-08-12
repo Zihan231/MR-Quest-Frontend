@@ -19,21 +19,28 @@ export default function TakeExamPage() {
   useEffect(() => {
     if (!examGroupId) return;
     setLoading(true);
-    api.get(`/exam-groups/${examGroupId}`)
-      .then((res) => {
-        setExamGroup(res.data);
+    Promise.all([
+      api.get(`/exam-groups/${examGroupId}`),
+      api.get(`/exam-groups/${examGroupId}/my-submissions`).catch(() => ({ data: [] }))
+    ])
+      .then(([egRes, subRes]) => {
+        const eg = egRes.data;
+        if (subRes.data && subRes.data.length > 0) {
+          eg.submissions = subRes.data;
+        }
+        setExamGroup(eg);
       }).catch((err) => {
         toast.error(err.response?.data?.message || "Failed to start exam.");
-        router.push(`/exam-groups/${examGroupId}`);
+        router.push(`/exams/${examGroupId}`);
       }).finally(() => setLoading(false));
   }, [examGroupId, router]);
 
   const handleComplete = () => {
-    window.location.href = `/exam-groups/${examGroupId}`;
+    window.location.href = `/exams/${examGroupId}`;
   };
 
   const handleCancel = () => {
-    router.push(`/exam-groups/${examGroupId}`);
+    router.push(`/exams/${examGroupId}`);
   };
 
   if (loading) {
@@ -55,7 +62,7 @@ export default function TakeExamPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mx-auto max-w-5xl px-4 py-8">
         <ExamGroupPlayer
           examGroupId={examGroupId}
           examGroup={examGroup}

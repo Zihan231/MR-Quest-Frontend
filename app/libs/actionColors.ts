@@ -26,7 +26,6 @@ const ACTION_COLORS: Record<string, string> = {
   PROFILE_UPDATED: "bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-950/30 dark:text-slate-400 dark:border-slate-900/40",
   ROLE_CHANGED: "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800/40",
   USER_LOGIN: "bg-zinc-50 text-zinc-700 border-zinc-100 dark:bg-zinc-950/30 dark:text-zinc-400 dark:border-zinc-900/40",
-  USER_LOGOUT: "bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-950/30 dark:text-gray-400 dark:border-gray-900/40",
   CERTIFICATE_APPLIED: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800/40",
   CERTIFICATE_GENERATED: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-800/40",
   CERTIFICATE_REJECTED: "bg-red-200 text-red-900 border-red-300 dark:bg-red-900/60 dark:text-red-200 dark:border-red-800/60",

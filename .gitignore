@@ -40,3 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 TODO.md
+
+# Windows reserved device names
+nul
+
+# Local logs/checks
+dev-server.log
+tsc-check.txt
+CONTEXT.md

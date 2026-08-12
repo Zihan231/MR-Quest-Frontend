@@ -9,30 +9,26 @@ import { useUser } from "@/hooks/useUser";
 import { useTheme } from "@/context/ThemeContext";
 
 import { NotificationBell } from "@/components/NotificationBell";
+import { RegionSelects } from "@/components/RegionSelects";
 import { api } from "@/libs/api";
 import {
-  Search,
-  Gift,
   Moon,
   Sun,
   LayoutDashboard,
-  Library,
-  BookOpen,
-  BarChart3,
-  Award,
   Settings,
   LogOut,
   Users,
   CheckSquare,
-  PlusCircle,
   Phone,
   MapPin,
-  Mail,
   User as UserIcon,
-  Trash2,
   Menu,
   X,
   History,
+  Award,
+  BarChart3,
+  Camera,
+  Trash2,
 } from "lucide-react";
 
 // Sidebar content that uses search params
@@ -41,12 +37,13 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
   const { name, email, role } = useUser();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const defaultTab = role === "admin" || role === "employee" ? "overview" : "progress";
+  const defaultTab = role === "admin" || role === "employee" ? "overview" : "settings";
   const currentTab = pathname === "/dashboard" ? (searchParams.get("tab") || defaultTab) : searchParams.get("tab");
 
-  const isManageCoursesActive = currentTab === "manage-courses" || pathname?.startsWith("/dashboard/courses");
-  const isMyLearningActive = currentTab === "my-learning" || currentTab === "overview" || pathname?.startsWith("/dashboard/learn");
   const isActivityLogActive = pathname?.startsWith("/dashboard/activity-log");
+  const isAnalyticsActive = pathname?.startsWith("/dashboard/analytics");
+  const isExamsActive = pathname?.startsWith("/exams");
+  const isResultsActive = pathname?.startsWith("/results");
 
   const isAdminOrEmployee = role === "admin" || role === "employee";
   const isAdmin = role === "admin";
@@ -73,10 +70,10 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
           </div>
           <div>
             <h1 className="text-lg font-bold leading-tight text-slate-900 dark:text-zinc-50">
-              TrainXcel
+              MrQuest
             </h1>
             <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-              Enterprise LMS
+              Exam Platform
             </p>
           </div>
         </div>
@@ -102,17 +99,10 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
               onClick={onClose}
             />
             <NavItem
-              icon={<PlusCircle size={18} />}
-              label="Manage Courses"
-              href="/dashboard?tab=manage-courses"
-              active={isManageCoursesActive}
-              onClick={onClose}
-            />
-            <NavItem
               icon={<CheckSquare size={18} />}
               label="Manage Exams"
-              href="/dashboard?tab=manage-exam-groups"
-              active={currentTab === "manage-exam-groups"}
+              href="/exams"
+              active={isExamsActive}
               onClick={onClose}
             />
             {isAdmin && (
@@ -126,6 +116,15 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
             )}
             {isAdmin && (
               <NavItem
+                icon={<BarChart3 size={18} />}
+                label="Analytics"
+                href="/dashboard/analytics"
+                active={isAnalyticsActive}
+                onClick={onClose}
+              />
+            )}
+            {isAdmin && (
+              <NavItem
                 icon={<History size={18} />}
                 label="Activity Log"
                 href="/dashboard/activity-log"
@@ -133,42 +132,28 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
                 onClick={onClose}
               />
             )}
+            <NavItem
+              icon={<Trash2 size={18} />}
+              label="Recycle Bin"
+              href="/dashboard?tab=trash"
+              active={currentTab === "trash"}
+              onClick={onClose}
+            />
           </>
         ) : (
           <>
             <NavItem
-              icon={<BarChart3 size={18} />}
-              label="My Progress"
-              href="/dashboard?tab=progress"
-              active={currentTab === "progress"}
-              onClick={onClose}
-            />
-            <NavItem
-              icon={<BookOpen size={18} />}
-              label="My Learning"
-              href="/dashboard?tab=my-learning"
-              active={isMyLearningActive}
-              onClick={onClose}
-            />
-            <NavItem
-              icon={<Library size={18} />}
-              label="Course Catalog"
-              href="/dashboard?tab=catalog"
-              active={currentTab === "catalog"}
-              onClick={onClose}
-            />
-            <NavItem
               icon={<CheckSquare size={18} />}
-              label="Exam Groups"
-              href="/dashboard?tab=exam-groups"
-              active={currentTab === "exam-groups"}
+              label="Exams"
+              href="/exams"
+              active={isExamsActive}
               onClick={onClose}
             />
             <NavItem
               icon={<Award size={18} />}
-              label="Certificates"
-              href="/dashboard?tab=certificates"
-              active={currentTab === "certificates"}
+              label="Results"
+              href="/results"
+              active={isResultsActive}
               onClick={onClose}
             />
           </>
@@ -180,15 +165,6 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
         SYSTEM
       </div>
       <nav className="flex flex-col gap-1">
-        {isAdminOrEmployee && (
-          <NavItem
-            icon={<Trash2 size={18} />}
-            label="Recycle Bin"
-            href="/dashboard?tab=trash"
-            active={currentTab === "trash"}
-            onClick={onClose}
-          />
-        )}
         <NavItem
           icon={<Settings size={18} />}
           label="Settings"
@@ -229,12 +205,21 @@ export default function DashboardLayout({
   const [nameInput, setNameInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [addressInput, setAddressInput] = useState("");
+  const [region, setRegion] = useState<{ division?: string; district?: string; upazila?: string }>({});
   const [profilePictureInput, setProfilePictureInput] = useState<File | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [isViewingDp, setIsViewingDp] = useState(false);
-  
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
+  useEffect(() => {
+    return () => {
+      if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
+    };
+  }, [profilePreviewUrl]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -258,12 +243,18 @@ export default function DashboardLayout({
     setIsDropdownOpen(false);
     setIsEditModalOpen(true);
     setProfileError("");
+    setProfilePictureInput(null);
+    setProfilePreviewUrl(null);
     try {
       const res = await api.get("/auth/profile");
       setNameInput(res.data.name || "");
       setPhoneInput(res.data.phoneNumber || "");
       setAddressInput(res.data.address || "");
-      setProfilePictureInput(null);
+      setRegion({
+        division: res.data.division || undefined,
+        district: res.data.district || undefined,
+        upazila: res.data.upazila || undefined,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -289,6 +280,9 @@ export default function DashboardLayout({
         name: nameInput,
         phoneNumber: phoneInput,
         address: addressInput,
+        division: region.division || undefined,
+        district: region.district || undefined,
+        upazila: region.upazila || undefined,
         ...(finalProfilePictureUrl && { profilePictureUrl: finalProfilePictureUrl }),
       });
       await reloadProfile();
@@ -306,11 +300,7 @@ export default function DashboardLayout({
         {/* =======================================================================
           LEFT SIDEBAR (Wrapped in Suspense because of useSearchParams)
           ======================================================================= */}
-        <Suspense fallback={
-          <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white px-4 py-6 dark:border-zinc-800 dark:bg-[#121212] lg:flex">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-          </aside>
-        }>
+        <Suspense fallback={<SidebarSkeleton />}>
           <SidebarContent />
         </Suspense>
 
@@ -448,11 +438,7 @@ export default function DashboardLayout({
           />
           {/* Sidebar drawer content container */}
           <div className="relative flex w-64 max-w-xs flex-col bg-white dark:bg-[#121212] animate-slideIn">
-            <Suspense fallback={
-              <aside className="w-full flex h-full flex-col bg-white px-4 py-6 dark:bg-[#121212]">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-              </aside>
-            }>
+            <Suspense fallback={<SidebarSkeleton isMobile />}>
               <SidebarContent isMobile={true} onClose={() => setIsMobileOpen(false)} />
             </Suspense>
           </div>
@@ -461,8 +447,14 @@ export default function DashboardLayout({
 
       {/* Edit Profile Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] animate-scaleIn">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setIsEditModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50 flex items-center gap-2">
               <UserIcon size={18} className="text-blue-600" /> Edit Profile Details
             </h3>
@@ -476,16 +468,72 @@ export default function DashboardLayout({
             <form onSubmit={handleSaveProfile} className="mt-4 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-500">Profile Picture</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setProfilePictureInput(e.target.files[0]);
-                    }
-                  }}
-                  className="rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800"
-                />
+                <div className="flex items-center gap-4 rounded-xl border border-dashed border-blue-300 bg-blue-50/40 p-4 transition dark:border-blue-900/60 dark:bg-blue-950/20">
+                  <div className="relative h-16 w-16 shrink-0">
+                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-2xl font-bold text-white ring-2 ring-blue-100 dark:ring-blue-900">
+                      {profilePreviewUrl ? (
+                        <img src={profilePreviewUrl} alt="Profile preview" className="h-full w-full object-cover" />
+                      ) : profilePictureUrl ? (
+                        <img src={`${backendUrl}${profilePictureUrl}`} alt={name} className="h-full w-full object-cover" />
+                      ) : (
+                        name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md ring-2 ring-white transition hover:bg-blue-700 dark:ring-zinc-900"
+                      title="Change photo"
+                    >
+                      <Camera size={13} />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100 dark:border-blue-900/50 dark:bg-zinc-900 dark:text-blue-400 dark:hover:bg-blue-950/60"
+                    >
+                      {profilePictureInput ? "Change Photo" : "Upload Photo"}
+                    </button>
+                    {profilePictureInput && (
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-[11px] text-slate-600 dark:text-zinc-400">
+                          {profilePreviewUrl ? profilePictureInput.name : ""}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfilePictureInput(null);
+                            setProfilePreviewUrl(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                          className="text-[11px] font-bold text-red-500 transition hover:text-red-600"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+                      JPG, PNG, GIF or WebP supported
+                    </p>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files && e.target.files[0];
+                      if (!file) return;
+                      if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
+                      setProfilePictureInput(file);
+                      setProfilePreviewUrl(URL.createObjectURL(file));
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -521,6 +569,15 @@ export default function DashboardLayout({
                 </div>
               </div>
 
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500">Region (Division / District / Upazila)</label>
+                <RegionSelects
+                  value={region}
+                  onChange={(r) => setRegion({ ...region, ...r })}
+                  disabled={isSavingProfile}
+                />
+              </div>
+
               <div className="mt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-zinc-800/80 pt-4">
                 <button
                   type="button"
@@ -550,6 +607,48 @@ export default function DashboardLayout({
         </div>
       )}
     </ProtectedRoute>
+  );
+}
+
+// Sidebar skeleton fallback shown while useSearchParams suspends.
+// Matches the real sidebar's structure so the menu doesn't visibly blink.
+function SidebarSkeleton({ isMobile = false }: { isMobile?: boolean }) {
+  return (
+    <aside
+      className={`flex flex-col bg-white px-4 py-6 dark:bg-[#121212] ${
+        isMobile ? "w-full h-full" : "hidden lg:flex w-64 border-r border-slate-200 dark:border-zinc-800"
+      }`}
+    >
+      <div className="mb-10 flex items-center gap-3 px-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+        <div>
+          <h1 className="text-lg font-bold leading-tight text-slate-900 dark:text-zinc-50">MrQuest</h1>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Exam Platform</p>
+        </div>
+      </div>
+      <div className="flex flex-col gap-1">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-10 rounded-xl bg-slate-100 dark:bg-zinc-800/60"
+          />
+        ))}
+      </div>
+    </aside>
   );
 }
 

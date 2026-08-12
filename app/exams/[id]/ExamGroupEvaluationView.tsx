@@ -4,18 +4,28 @@ import React, { useState } from "react";
 import { api } from "@/libs/api";
 import { CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { ReferenceDocViewer } from "@/components/ReferenceDocViewer";
 
 type Props = {
   submission: any;
+  examGroupId: number;
   onClose: () => void;
   onEvaluated: () => void;
 };
 
-export default function ExamGroupEvaluationView({ submission, onClose, onEvaluated }: Props) {
+const getAbsoluteDocUrl = (url: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+export default function ExamGroupEvaluationView({ submission, examGroupId, onClose, onEvaluated }: Props) {
   const [evaluations, setEvaluations] = useState<Record<number, { marksAwarded: number | string; evaluatorComment: string }>>({});
+  const [initialEvaluations, setInitialEvaluations] = useState<Record<number, { marksAwarded: number | string; evaluatorComment: string }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize evaluations state
+  // Initialize evaluations state, pre-filling previous marks/feedback
   React.useEffect(() => {
     if (submission?.answers) {
       const initialEvals: any = {};
@@ -24,16 +34,19 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
         const isAIAns = ans.question?.evaluationType === 'AI';
         if (isMCQAns || isAIAns) return;
         initialEvals[ans.id] = {
-          marksAwarded: ans.marksAwarded !== undefined && ans.marksAwarded !== null && ans.evaluatedBy ? String(ans.marksAwarded) : "",
+          marksAwarded: ans.marksAwarded ? String(ans.marksAwarded) : "",
           evaluatorComment: ans.evaluatorComment || "",
         };
       });
+      setInitialEvaluations(initialEvals);
       setEvaluations(initialEvals);
     }
   }, [submission]);
 
-  const handleMarksChange = (answerId: number, val: string, maxMarks: number) => {
-    const cleaned = val.replace(/[^0-9.]/g, "");
+  const isDirty = JSON.stringify(evaluations) !== JSON.stringify(initialEvaluations);
+
+  const handleMarksChange = (answerId: number, raw: string, maxMarks: number) => {
+    const cleaned = raw.replace(/[^0-9.]/g, "");
     const numeric = parseFloat(cleaned);
     let next = cleaned;
     if (!isNaN(numeric)) {
@@ -60,7 +73,7 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
 
   const submitEvaluation = async () => {
     const manualAnswers = (submission.answers || []).filter(
-      (ans: any) => ans.question?.type !== 'MCQ' && !(ans.question?.evaluationType === 'AI' && ans.evaluatedBy === 'AI')
+      (ans: any) => ans.question?.type !== 'MCQ' && !(ans.question?.evaluationType === 'AI')
     );
 
     for (const ans of manualAnswers) {
@@ -82,7 +95,7 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
         }))
       };
 
-      await api.put(`/exam-groups/${submission.examGroup.id}/evaluations`, payload);
+      await api.put(`/exam-groups/${examGroupId}/evaluations`, payload);
       toast.success("Evaluation saved successfully!");
       onEvaluated();
       onClose();
@@ -100,12 +113,12 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
       return (
         <div className="flex flex-col gap-3 text-xs mt-2">
           <div className="grid grid-cols-1 gap-2 text-center">
-            <div className="bg-white/80 dark:bg-zinc-900 p-2.5 rounded-lg border border-slate-200/50 dark:border-zinc-800">
-              <p className="font-bold text-slate-500 uppercase text-[9px]">Script Accuracy Score</p>
+            <div className="bg-white/80 dark:bg-zinc-900 p-2 rounded-lg border border-slate-200/50 dark:border-zinc-800">
+              <p className="font-bold text-slate-500 uppercase text-[9px]">Script Accuracy</p>
               <p className="font-extrabold text-slate-800 dark:text-zinc-200 mt-0.5">{parsed.accuracyScore} / {q.accuracyMarks ?? q.marks}</p>
             </div>
           </div>
-          <div className="mt-1 flex flex-col gap-2.5 text-left">
+          <div className="mt-1 flex flex-col gap-2.5">
             {admin.scoreAnalysis && (
               <div>
                 <p className="font-bold text-slate-800 dark:text-zinc-200">Score Analysis:</p>
@@ -141,7 +154,7 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
                 <p className="font-bold text-red-600 dark:text-red-400">Medical Terms (Incorrect):</p>
                 <ul className="list-disc ml-4 text-slate-600 dark:text-zinc-400 font-medium mt-0.5">
                   {breakdown.medicalTermsIncorrect.map((t: any, i: number) => (
-                    <li key={i}>"{t.studentSaid}" &rarr; should be "{t.correctTerm}"</li>
+                    <li key={i}>"{t.studentSaid}" → should be "{t.correctTerm}"</li>
                   ))}
                 </ul>
               </div>
@@ -186,17 +199,14 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
         </div>
       );
     }
-    return (
-      <div className="mt-3 text-sm text-slate-700 dark:text-zinc-300">
-        <p className="font-semibold mb-1">Feedback:</p>
-        <p>{parsed?.feedback || ans.evaluatorComment || 'No feedback provided.'}</p>
-      </div>
-    );
+    return <p className="text-sm text-slate-700 dark:text-zinc-300 mt-2">{parsed?.feedback || ans.evaluatorComment || 'No feedback provided.'}</p>;
   };
+
+  if (!submission) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] flex flex-col max-h-[95vh]">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <div>
             <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 transition mb-2 w-fit border border-blue-100 dark:border-blue-900/30">
@@ -218,17 +228,23 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
               if (!q) return null;
 
               const isMCQ = q.type === 'MCQ';
-              const isAIReviewed = q.evaluationType === 'AI' && ans.evaluatedBy === 'AI';
+              const isAIQuestion = q.evaluationType === 'AI';
+              const hasAiFeedback = isAIQuestion && !!ans.evaluatorComment;
+              const isAIReviewed = hasAiFeedback;
 
               // Try parsing AI comment if it exists
               let aiCommentParsed = null;
-              if (isAIReviewed && ans.evaluatorComment) {
+              if (hasAiFeedback && ans.evaluatorComment) {
                 try {
                   aiCommentParsed = JSON.parse(ans.evaluatorComment);
                 } catch (e) {
                   // Ignore
                 }
               }
+              const aiMarks =
+                ans.marksAwarded > 0
+                  ? ans.marksAwarded
+                  : aiCommentParsed?.overallScore ?? ans.marksAwarded;
 
               return (
                 <div key={idx} className="bg-slate-50 dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
@@ -241,7 +257,7 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
                           {q.marks} Marks
                         </span>
                       </div>
-                      
+
                       {/* Answer Display */}
                       <div className="mt-4">
                         {isMCQ ? (
@@ -272,40 +288,59 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
                             })}
                           </div>
                         ) : q.type === 'Video' ? (
-                          <div className="bg-black/5 dark:bg-black/20 rounded-xl p-4">
-                            {ans.providedAnswer && ans.providedAnswer[0] ? (
-                              <video controls className="w-full max-h-[300px] rounded-lg">
-                                <source src={ans.providedAnswer[0]} />
-                                Your browser does not support the video tag.
-                              </video>
-                            ) : (
-                              <p className="text-sm text-slate-500 italic">No video submitted.</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                            <div className="bg-black/5 dark:bg-black/20 rounded-xl p-4">
+                              {ans.providedAnswer && ans.providedAnswer[0] ? (
+                                <video controls className="w-full max-h-[300px] rounded-lg">
+                                  <source src={getAbsoluteDocUrl(ans.providedAnswer[0])} />
+                                  Your browser does not support the video tag.
+                                </video>
+                              ) : (
+                                <p className="text-sm text-slate-500 italic">No video submitted.</p>
+                              )}
+                            </div>
+                            {q.referenceScript && (
+                              <ReferenceDocViewer referenceScript={q.referenceScript} />
                             )}
                           </div>
                         ) : (
-                          <div className="bg-white dark:bg-zinc-950 rounded-xl p-4 border border-slate-200 dark:border-zinc-800">
-                            <p className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap">
-                              {ans.providedAnswer && ans.providedAnswer[0] ? ans.providedAnswer[0] : <span className="italic text-slate-400">No answer provided.</span>}
-                            </p>
-                          </div>
+                          <>
+                            {q.referenceScript && (
+                              <div className="mb-3">
+                                <ReferenceDocViewer referenceScript={q.referenceScript} />
+                              </div>
+                            )}
+                            <div className="bg-white dark:bg-zinc-950 rounded-xl p-4 border border-slate-200 dark:border-zinc-800">
+                              <p className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap">
+                                {ans.providedAnswer && ans.providedAnswer[0] ? ans.providedAnswer[0] : <span className="italic text-slate-400">No answer provided.</span>}
+                              </p>
+                            </div>
+                          </>
                         )}
                       </div>
 
                       {/* Evaluation Controls */}
                       {!isMCQ && (
                         <div className="mt-6 border-t border-slate-200 dark:border-zinc-800 pt-4">
-                          {isAIReviewed ? (
+                          {isAIQuestion ? (
                             <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-4 border border-blue-100 dark:border-blue-900/30">
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
                                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                                  AI Reviewed
+                                  {isAIReviewed ? 'AI Reviewed' : 'AI Evaluation'}
                                 </span>
                                 <span className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                                  Marks Awarded: {ans.marksAwarded} / {q.marks}
+                                  {isAIReviewed ? `Marks Awarded: ${aiMarks} / ${q.marks}` : 'Pending AI Review'}
                                 </span>
                               </div>
-                              {renderAiFeedback(ans, q, aiCommentParsed)}
+                              {isAIReviewed ? (
+                                renderAiFeedback(ans, q, aiCommentParsed)
+                              ) : (
+                                <p className="text-sm text-slate-600 dark:text-zinc-400 mt-2 flex items-center gap-2">
+                                  <Loader2 size={14} className="animate-spin text-blue-500" />
+                                  AI evaluation in progress. This question will be graded automatically.
+                                </p>
+                              )}
                             </div>
                           ) : (
                             <div className="flex flex-col gap-4">
@@ -314,10 +349,10 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-slate-500">Marks out of {q.marks}:</span>
                                   <input
-                                    type="number"
-                                    min="0"
-                                    max={q.marks}
-                                    value={evaluations[ans.id]?.marksAwarded ?? ""}
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="0"
+                                    value={evaluations[ans.id]?.marksAwarded ?? ''}
                                     onChange={(e) => handleMarksChange(ans.id, e.target.value, q.marks)}
                                     className="w-20 rounded-lg border border-slate-300 bg-white py-1.5 px-3 text-sm font-bold focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 text-center"
                                   />
@@ -354,7 +389,7 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
           </button>
           <button
             onClick={submitEvaluation}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDirty}
             className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 text-sm font-bold transition flex items-center gap-2 disabled:opacity-50 shadow-md shadow-blue-500/20"
           >
             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}

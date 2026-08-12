@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { api } from "@/libs/api";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "@/components/ConfirmModal";
-import { PlusCircle, Search, Filter, Loader2, BookOpen } from "lucide-react";
+import {
+  PlusCircle,
+  Search,
+  Filter,
+  Loader2,
+  BookOpen,
+  X,
+  ArrowRight,
+} from "lucide-react";
 import { SelectDropdown } from "./SelectDropdown";
 import { ExamGroup } from "@/hooks/useExamGroups";
 import { ExamGroupCard } from "@/components/ExamGroupCard";
@@ -17,15 +25,16 @@ export function ExamGroupManager() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<any>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ title: "", description: "", status: "draft", startTime: "", endTime: "", timePerQuestion: "", thumbnailUrl: "" });
-  const [isCreating, setIsCreating] = useState(false);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [deleteExamId, setDeleteExamId] = useState<number | null>(null);
+
+  // Create form state
+  const [createForm, setCreateForm] = useState({ title: "", description: "", status: "draft" });
+  const [isCreating, setIsCreating] = useState(false);
 
   const fetchExamGroups = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/exam-groups", { params: { page, limit: 10, q: search || undefined, status: statusFilter || undefined } });
+      const res = await api.get("/exam-groups", { params: { page, limit: 6, q: search || undefined, status: statusFilter || undefined } });
       const data = res.data;
       if (Array.isArray(data)) {
         setExamGroups(data);
@@ -43,34 +52,31 @@ export function ExamGroupManager() {
 
   useEffect(() => { fetchExamGroups(); }, [page, search, statusFilter]);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const openCreateModal = () => {
+    setCreateForm({ title: "", description: "", status: "draft" });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.title.trim()) {
+      toast.error("Title is required.");
+      return;
+    }
     setIsCreating(true);
     try {
-      let thumbnailUrl = createForm.thumbnailUrl;
-      if (thumbnailFile) {
-        const formData = new FormData();
-        formData.append("file", thumbnailFile);
-        const uploadRes = await api.post("/exam-groups/upload-thumbnail", formData, { headers: { "Content-Type": "multipart/form-data" } });
-        thumbnailUrl = uploadRes.data.url;
-      }
+      const payload: any = { ...createForm };
+      const res = await api.post("/exam-groups", payload);
+      const createdExam = res.data;
 
-      const payload: any = { ...createForm, thumbnailUrl };
-      if (payload.timePerQuestion === "") delete payload.timePerQuestion;
-      else payload.timePerQuestion = Number(payload.timePerQuestion);
-
-      if (payload.startTime) payload.startTime = new Date(payload.startTime).toISOString();
-      if (payload.endTime) payload.endTime = new Date(payload.endTime).toISOString();
-
-      await api.post("/exam-groups", payload);
-      toast.success("Exam group created successfully!");
+      toast.success("Exam created successfully!");
       setIsCreateModalOpen(false);
-      setCreateForm({ title: "", description: "", status: "draft", startTime: "", endTime: "", timePerQuestion: "", thumbnailUrl: "" });
-      setThumbnailFile(null);
-      fetchExamGroups();
+      if (createdExam && createdExam.id) {
+        window.location.href = `/exams/${createdExam.id}`;
+      } else {
+        fetchExamGroups();
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create exam group.");
-    } finally {
+      toast.error(err.response?.data?.message || "Failed to create exam.");
       setIsCreating(false);
     }
   };
@@ -78,11 +84,21 @@ export function ExamGroupManager() {
   const confirmDelete = async (id: number) => {
     try {
       await api.delete(`/exam-groups/${id}`);
-      toast.success("Exam group deleted.");
+      toast.success("Exam moved to recycle bin.");
       setDeleteExamId(null);
       fetchExamGroups();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete exam group.");
+      toast.error(err.response?.data?.message || "Failed to delete exam.");
+    }
+  };
+
+  const handleStatusChange = async (examGroupId: number, newStatus: "active" | "draft") => {
+    try {
+      await api.patch(`/exam-groups/${examGroupId}`, { status: newStatus });
+      toast.success(`Exam status updated to ${newStatus.toUpperCase()}`);
+      setExamGroups(prev => prev.map(eg => eg.id === examGroupId ? { ...eg, status: newStatus } : eg));
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update exam status.");
     }
   };
 
@@ -90,11 +106,11 @@ export function ExamGroupManager() {
     <div className="flex flex-col gap-5 pb-8 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Exam Groups</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Create and manage timed MCQ exam groups.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Exams</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Create and manage exams with MCQ, creative, and video questions.</p>
         </div>
         <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={openCreateModal}
           className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm shrink-0 self-start sm:self-center"
         >
           <PlusCircle size={15} /> Create Exam
@@ -107,7 +123,7 @@ export function ExamGroupManager() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search exam groups..."
+              placeholder="Search exams..."
               value={search}
               onChange={(e) => { setPage(1); setSearch(e.target.value); }}
               className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
@@ -126,7 +142,7 @@ export function ExamGroupManager() {
                 { value: "cancelled", label: "Cancelled" },
               ]}
               className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
-              ariaLabel="Filter exam groups by status"
+              ariaLabel="Filter exams by status"
             />
           </div>
         </div>
@@ -135,12 +151,12 @@ export function ExamGroupManager() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-sm text-slate-500">Loading exam groups...</p>
+          <p className="text-sm text-slate-500">Loading exams...</p>
         </div>
       ) : examGroups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
           <BookOpen size={40} className="text-slate-300 dark:text-zinc-700" />
-          <p className="text-sm text-slate-500">No exam groups found.</p>
+          <p className="text-sm text-slate-500">No exams found.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -148,8 +164,9 @@ export function ExamGroupManager() {
             <ExamGroupCard
               key={eg.id}
               examGroup={{ ...eg, totalQuestions: (eg as any).questions?.length ?? 0 }}
-              onManage={() => { window.location.href = `/dashboard/exam-groups/${eg.id}/manage`; }}
+              onManage={() => { window.location.href = `/exams/${eg.id}`; }}
               onDelete={() => setDeleteExamId(eg.id)}
+              onStatusChange={(newStatus) => handleStatusChange(eg.id, newStatus)}
               showActions
               userRole="admin"
             />
@@ -179,11 +196,21 @@ export function ExamGroupManager() {
         </div>
       )}
 
+      {/* ─────────────── CREATE EXAM MODAL ─────────────── */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212]">
-            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Create Exam Group</h3>
-            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+          <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212]">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50">Create Exam</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Fill in the details below. You can add questions after creating the exam.</p>
+              </div>
+              <button onClick={() => setIsCreateModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Title *</label>
                 <input type="text" required value={createForm.title} onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900" />
@@ -198,40 +225,29 @@ export function ExamGroupManager() {
                   value={createForm.status}
                   onChange={(v) => setCreateForm({ ...createForm, status: v })}
                   options={[
-                    { value: "draft", label: "Draft" },
-                    { value: "active", label: "Active" },
-                    { value: "completed", label: "Completed" },
-                    { value: "cancelled", label: "Cancelled" },
+                    { value: "draft", label: "Draft (hidden from students)" },
+                    { value: "active", label: "Active (visible to students)" },
                   ]}
                   className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
-                  ariaLabel="Exam group status"
+                  ariaLabel="Exam status"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Start Time</label>
-                  <input type="datetime-local" value={createForm.startTime} onChange={(e) => setCreateForm({ ...createForm, startTime: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">End Time</label>
-                  <input type="datetime-local" value={createForm.endTime} onChange={(e) => setCreateForm({ ...createForm, endTime: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Total Time Limit (minutes, optional)</label>
-                <input type="number" min="1" value={createForm.timePerQuestion} onChange={(e) => setCreateForm({ ...createForm, timePerQuestion: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Thumbnail</label>
-                <input type="file" accept="image/*" onChange={(e) => { const file = e.target.files?.[0] || null; setThumbnailFile(file); }} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs dark:border-zinc-800 dark:bg-zinc-900" />
+                {createForm.status === "draft" && (
+                  <p className="text-[11px] text-slate-400 mt-1">Questions you add are saved but students won't see this exam until it's set to Active.</p>
+                )}
               </div>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsCreateModalOpen(false)} className="rounded-xl border border-slate-200 dark:border-zinc-800 px-4 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-800 transition">Cancel</button>
-                <button type="submit" disabled={isCreating} className="rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 text-xs font-bold transition">
-                  {isCreating ? "Creating..." : "Create Exam"}
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  disabled={isCreating}
+                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 text-xs font-bold transition"
+                >
+                  {isCreating && <Loader2 size={14} className="animate-spin" />}
+                  {isCreating ? "Creating..." : "Create Exam"} <ArrowRight size={14} />
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -240,9 +256,9 @@ export function ExamGroupManager() {
         isOpen={deleteExamId !== null}
         onCancel={() => setDeleteExamId(null)}
         onConfirm={() => deleteExamId && confirmDelete(deleteExamId)}
-        title="Delete Exam Group"
-        message="Are you sure you want to delete this exam group? This action cannot be undone and will delete all associated questions, enrollments, and submissions."
-        confirmText="Delete Exam Group"
+        title="Delete Exam"
+        message="Move this exam to the recycle bin? You can restore it later from the Recycle Bin in your dashboard."
+        confirmText="Move to Recycle Bin"
       />
     </div>
   );

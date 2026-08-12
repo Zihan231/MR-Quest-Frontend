@@ -50,7 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await api.post("/auth/login", { email, password });
       setUser(response.data); // Set user in state
-      router.push("/dashboard"); // Redirect to protected route
+      // Students land on the exams page; staff land on the dashboard
+      router.push(response.data?.role === "user" ? "/exams" : "/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       throw error; // Throw to handle errors in the UI component
@@ -61,11 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.post("/auth/logout");
       setUser(null);
-      if (typeof window !== "undefined") {
-        sessionStorage.removeItem("trainxcel_selected_course");
-        sessionStorage.removeItem("trainxcel_selected_lesson");
-        sessionStorage.removeItem("trainxcel_course_details_tab");
-      }
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
