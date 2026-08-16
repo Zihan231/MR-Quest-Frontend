@@ -213,7 +213,7 @@ export default function DashboardLayout({
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const backendUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/+$/, "");
 
   useEffect(() => {
     return () => {

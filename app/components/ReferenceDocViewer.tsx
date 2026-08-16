@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, FileText, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/+$/, "");
 
 function resolveUrl(refScript: string): string {
   return refScript.startsWith("http") ? refScript : `${API_URL}${refScript}`;

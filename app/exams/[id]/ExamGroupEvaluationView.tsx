@@ -16,7 +16,7 @@ type Props = {
 const getAbsoluteDocUrl = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/+$/, "");
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
