@@ -22,10 +22,16 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
       submission.answers.forEach((ans: any) => {
         const isMCQAns = ans.question?.type === 'MCQ';
         const isAIAns = ans.question?.evaluationType === 'AI';
-        if (isMCQAns || isAIAns) return;
+        const isFailed =
+          ans.evaluatorComment?.startsWith?.('__AI_FAILED__');
+        if (isMCQAns || (isAIAns && ans.evaluatedBy === 'AI' && !isFailed)) return;
         initialEvals[ans.id] = {
-          marksAwarded: ans.marksAwarded !== undefined && ans.marksAwarded !== null && ans.evaluatedBy ? String(ans.marksAwarded) : "",
-          evaluatorComment: ans.evaluatorComment || "",
+          marksAwarded: isFailed
+            ? ""
+            : ans.marksAwarded !== undefined && ans.marksAwarded !== null && ans.evaluatedBy === 'Human'
+              ? String(ans.marksAwarded)
+              : "",
+          evaluatorComment: isFailed ? "" : (ans.evaluatorComment || ""),
         };
       });
       setEvaluations(initialEvals);
@@ -218,7 +224,8 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
               if (!q) return null;
 
               const isMCQ = q.type === 'MCQ';
-              const isAIReviewed = q.evaluationType === 'AI' && ans.evaluatedBy === 'AI';
+              const isAIFailed = (ans.evaluatorComment || '').startsWith('__AI_FAILED__');
+              const isAIReviewed = q.evaluationType === 'AI' && ans.evaluatedBy === 'AI' && !isAIFailed;
 
               // Try parsing AI comment if it exists
               let aiCommentParsed = null;
@@ -309,6 +316,14 @@ export default function ExamGroupEvaluationView({ submission, onClose, onEvaluat
                             </div>
                           ) : (
                             <div className="flex flex-col gap-4">
+                              {isAIFailed && (
+                                <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+                                  <span className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0">⚠</span>
+                                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                                    AI evaluation failed for this answer. Please evaluate it manually.
+                                  </p>
+                                </div>
+                              )}
                               <div className="flex items-center justify-between">
                                 <label className="text-sm font-bold text-slate-700 dark:text-zinc-300">Manual Evaluation</label>
                                 <div className="flex items-center gap-2">

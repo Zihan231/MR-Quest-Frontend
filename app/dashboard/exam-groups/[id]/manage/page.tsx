@@ -912,7 +912,11 @@ export default function ManageExamGroupPage() {
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {submissions.map((sub) => (
+                  {submissions.map((sub) => {
+                    const hasAiFailed = (sub.answers || []).some(
+                      (a: any) => (a.evaluatorComment || '').startsWith('__AI_FAILED__'),
+                    );
+                    return (
                     <div
                       key={sub.id}
                       className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-zinc-800"
@@ -929,6 +933,11 @@ export default function ManageExamGroupPage() {
                           }`}>
                             {sub.status === 'Evaluated' ? 'Evaluated' : 'Pending'}
                           </span>
+                          {hasAiFailed && (
+                            <span className="inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border bg-red-50 text-red-600 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30">
+                              AI Failed
+                            </span>
+                          )}
                         </div>
                         <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                           {sub.user.userId}
@@ -951,7 +960,8 @@ export default function ManageExamGroupPage() {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1004,8 +1014,6 @@ export default function ManageExamGroupPage() {
                 <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900">
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
               <div className="flex justify-end gap-2 mt-2">

@@ -1457,8 +1457,6 @@ export default function ManageExamGroupPage() {
                 <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900">
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
               <div className="flex justify-end gap-2 mt-2">
