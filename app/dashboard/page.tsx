@@ -173,7 +173,7 @@ function PerformanceBadge({ level }: { level?: string | null }) {
   };
   if (!level) return <span className="text-xs text-slate-400">No data</span>;
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${map[level] || "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300"}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${map[level] || "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300"}`}>
       {label[level] || level}
     </span>
   );
@@ -1011,64 +1011,58 @@ function DashboardPageContent() {
 
           <div className="hidden md:block overflow-x-auto min-h-[440px]">
             <div className="relative">
-              <table className="w-full text-left text-sm border-collapse">
+              <table className="w-full text-left text-sm border-collapse table-fixed">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 dark:border-zinc-800">
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[70px]">
                     <span className="inline-flex items-center gap-1">
                       User ID
                       <InfoTooltip placement="bottom" content="Unique auto-generated identifier for this account (e.g. TX-0001)." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[20%]">
                     <span className="inline-flex items-center gap-1">
                       Name
                       <InfoTooltip placement="bottom" content="Full name and email address of the account holder." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[95px]">
                     <span className="inline-flex items-center gap-1">
                       Role
                       <InfoTooltip placement="bottom" content="Access level: User (student), Employee (can create/manage tasks), Administrator (full access + user management)." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[70px]">
                     <span className="inline-flex items-center gap-1">
                       Region
                       <InfoTooltip placement="bottom" content="Geographic area from the user's profile (Division, District, Upazila)." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase text-center w-[45px]">
                     <span className="inline-flex items-center gap-1">
                       Tasks
                       <InfoTooltip placement="bottom" content="Total number of tasks the user has submitted." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase text-center w-[55px]">
                     <span className="inline-flex items-center gap-1">
                       Avg Score
                       <InfoTooltip placement="bottom" content="Average percentage score across all submitted tasks. Calculated per task as (marks obtained ÷ total marks) × 100, then averaged over every task." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
-                    <span className="inline-flex items-center gap-1">
-                      Best
-                      <InfoTooltip placement="bottom" content="Highest single-task percentage score the user has achieved." />
-                    </span>
-                  </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase text-center w-[75px]">
                     <span className="inline-flex items-center gap-1">
                       Performance
                       <InfoTooltip placement="bottom" content="Performance tier based on the average score: 80%+ = Good, 60–79.9% = Average, 40–59.9% = Below Avg, under 40% or no submissions = No data." />
                     </span>
                   </th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-right">Actions</th>
+                  <th className="py-3 px-2.5 font-semibold text-xs uppercase text-right w-[90px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {listToRender.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
                       {isUsersLoading ? (
                         <div className="flex justify-center items-center gap-2">
                           <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -1082,17 +1076,19 @@ function DashboardPageContent() {
                 ) : (
                   listToRender.map((u) => (
                     <tr key={u.userId} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-zinc-800 dark:hover:bg-zinc-800/10">
-                      <td className="py-4 px-4 font-mono text-slate-500 dark:text-zinc-400 font-bold">{u.userId}</td>
-                      <td className="py-4 px-4 font-medium text-slate-900 dark:text-zinc-50 flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400">
-                          {u.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate">{u.name}</p>
-                          <p className="text-xs text-slate-400 truncate">{u.email}</p>
+                      <td className="py-4 px-2.5 font-mono text-slate-500 dark:text-zinc-400 font-bold truncate">{u.userId}</td>
+                      <td className="py-4 px-2.5 font-medium text-slate-900 dark:text-zinc-50">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400">
+                            {u.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate">{u.name}</p>
+                            <p className="text-xs text-slate-400 truncate">{u.email}</p>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-2.5">
                         <select
                           value={u.role} onChange={(e) => handleRoleChange(u.userId, e.target.value)}
                           className="rounded-lg border border-slate-200 bg-white p-1 text-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
@@ -1102,26 +1098,25 @@ function DashboardPageContent() {
                           <option value="admin">Administrator</option>
                         </select>
                       </td>
-                      <td className="py-4 px-4 text-xs text-slate-500 dark:text-zinc-400">
-                        {u.division ? (
-                          [u.division, u.district, u.upazila].filter(Boolean).join(", ")
-                        ) : (
-                          "N/A"
-                        )}
+                      <td className="py-4 px-2.5 text-xs text-slate-500 dark:text-zinc-400 min-w-0">
+                        <div className="truncate">
+                          {u.division ? (
+                            [u.division, u.district, u.upazila].filter(Boolean).join(", ")
+                          ) : (
+                            "N/A"
+                          )}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-2.5 text-center">
                         <span className="font-semibold text-slate-700 dark:text-zinc-200">{u.totalExams || 0}</span>
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-2.5 text-center">
                         <span className="font-semibold text-slate-700 dark:text-zinc-200">{u.avgScore ? `${u.avgScore}%` : "—"}</span>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="font-semibold text-slate-700 dark:text-zinc-200">{u.bestScore ? `${u.bestScore}%` : "—"}</span>
-                      </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-2.5 text-center">
                         <PerformanceBadge level={u.performanceLevel} />
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-4 px-2.5 text-right">
                         <button
                           onClick={() => {
                             setPerfModalUser(u);
@@ -1182,7 +1177,7 @@ function DashboardPageContent() {
                       <PerformanceBadge level={u.performanceLevel} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="grid grid-cols-2 gap-2 text-center text-xs">
                     <div className="rounded-lg bg-white p-2 dark:bg-zinc-900">
                       <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Tasks</p>
                       <p className="font-bold text-slate-700 dark:text-zinc-200">{u.totalExams || 0}</p>
@@ -1190,10 +1185,6 @@ function DashboardPageContent() {
                     <div className="rounded-lg bg-white p-2 dark:bg-zinc-900">
                       <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Avg</p>
                       <p className="font-bold text-slate-700 dark:text-zinc-200">{u.avgScore ? `${u.avgScore}%` : "—"}</p>
-                    </div>
-                    <div className="rounded-lg bg-white p-2 dark:bg-zinc-900">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Best</p>
-                      <p className="font-bold text-slate-700 dark:text-zinc-200">{u.bestScore ? `${u.bestScore}%` : "—"}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
