@@ -91,7 +91,7 @@ export function ExamsList() {
         )}
       </div>
 
-      {loading ? (
+      {loading && examGroups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
           <p className="text-sm text-slate-500">Loading tasks...</p>
@@ -108,35 +108,76 @@ export function ExamsList() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {examGroups.map((eg) => (
-              <ExamGroupCard
-                key={eg.id}
-                examGroup={{ ...eg, totalQuestions: eg.questions?.length ?? 0 }}
-                onTake={() => { window.location.href = eg.hasSubmitted ? `/results/${eg.id}` : `/exams/${eg.id}`; }}
-                showActions
-                userRole="user"
-              />
-            ))}
+          <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {examGroups.map((eg) => (
+                <ExamGroupCard
+                  key={eg.id}
+                  examGroup={{ ...eg, totalQuestions: eg.questions?.length ?? 0 }}
+                  onTake={() => { window.location.href = eg.hasSubmitted ? `/results/${eg.id}` : `/exams/${eg.id}`; }}
+                  showActions
+                  userRole="user"
+                />
+              ))}
+            </div>
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-sm rounded-2xl">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <p className="text-xs text-slate-500">Loading tasks...</p>
+                </div>
+              </div>
+            )}
           </div>
         )
       )}
 
       {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4">
-          <span className="text-xs text-slate-500">Page {meta.currentPage} of {meta.totalPages}</span>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+          <span className="text-xs font-semibold text-slate-500">
+            Page {page} of {meta.totalPages} ({meta.totalItems ?? meta.currentPage} total tasks)
+          </span>
+          <div className="flex items-center gap-1.5">
             <button
+              type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-zinc-800 transition"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
             >
               Previous
             </button>
+            {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === meta.totalPages || Math.abs(p - page) <= 1)
+              .reduce<number[]>((acc, p, idx, arr) => {
+                if (idx > 0 && p - arr[idx - 1] > 1) acc.push(-1);
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p) =>
+                p === -1 ? (
+                  <span key={`e-${p}`} className="px-1 text-xs text-slate-400 dark:text-zinc-500">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition ${
+                      p === page
+                        ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+                        : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
             <button
+              type="button"
               disabled={page >= meta.totalPages}
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-zinc-800 transition"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
             >
               Next
             </button>

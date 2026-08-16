@@ -47,13 +47,18 @@ function LoadingSpinner() {
   );
 }
 
-function InfoTooltip({ content }: { content: string }) {
+function InfoTooltip({ content, placement = "top" }: { content: string; placement?: "top" | "bottom" }) {
+  const isTop = placement === "top";
   return (
     <div className="group relative inline-block cursor-pointer align-middle">
       <HelpCircle size={13} className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors" />
-      <div className="absolute bottom-full left-1/2 z-50 mb-2 w-56 -translate-x-1/2 scale-0 rounded-lg bg-slate-950 p-2.5 text-[11px] font-normal normal-case leading-relaxed text-white shadow-xl transition-all duration-200 group-hover:scale-100 dark:bg-zinc-800">
+      <div className={`absolute left-1/2 z-50 w-64 -translate-x-1/2 scale-0 rounded-lg bg-slate-950 p-2.5 text-[11px] font-normal normal-case leading-relaxed text-white shadow-xl transition-all duration-200 group-hover:scale-100 dark:bg-zinc-800 ${
+        isTop ? "bottom-full mb-2" : "top-full mt-2"
+      }`}>
         {content}
-        <div className="absolute top-full left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1 bg-slate-950 rotate-45 dark:bg-zinc-800" />
+        <div className={`absolute left-1/2 h-2 w-2 -translate-x-1/2 bg-slate-950 rotate-45 dark:bg-zinc-800 ${
+          isTop ? "top-full -translate-y-1" : "bottom-full translate-y-1"
+        }`} />
       </div>
     </div>
   );
@@ -1004,35 +1009,74 @@ function DashboardPageContent() {
             </div>
           )}
 
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+          <div className="hidden md:block overflow-x-auto min-h-[440px]">
+            <div className="relative">
+              <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 dark:border-zinc-800">
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">User ID</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">Name</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">Role</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase">Region</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Tasks</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Avg Score</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Best</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Performance</th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                    <span className="inline-flex items-center gap-1">
+                      User ID
+                      <InfoTooltip placement="bottom" content="Unique auto-generated identifier for this account (e.g. TX-0001)." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                    <span className="inline-flex items-center gap-1">
+                      Name
+                      <InfoTooltip placement="bottom" content="Full name and email address of the account holder." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                    <span className="inline-flex items-center gap-1">
+                      Role
+                      <InfoTooltip placement="bottom" content="Access level: User (student), Employee (can create/manage tasks), Administrator (full access + user management)." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase">
+                    <span className="inline-flex items-center gap-1">
+                      Region
+                      <InfoTooltip placement="bottom" content="Geographic area from the user's profile (Division, District, Upazila)." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                    <span className="inline-flex items-center gap-1">
+                      Tasks
+                      <InfoTooltip placement="bottom" content="Total number of tasks the user has submitted." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                    <span className="inline-flex items-center gap-1">
+                      Avg Score
+                      <InfoTooltip placement="bottom" content="Average percentage score across all submitted tasks. Calculated per task as (marks obtained ÷ total marks) × 100, then averaged over every task." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                    <span className="inline-flex items-center gap-1">
+                      Best
+                      <InfoTooltip placement="bottom" content="Highest single-task percentage score the user has achieved." />
+                    </span>
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">
+                    <span className="inline-flex items-center gap-1">
+                      Performance
+                      <InfoTooltip placement="bottom" content="Performance tier based on the average score: 80%+ = Good, 60–79.9% = Average, 40–59.9% = Below Avg, under 40% or no submissions = No data." />
+                    </span>
+                  </th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {isUsersLoading ? (
+                {listToRender.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-400">
-                      <div className="flex justify-center items-center gap-2">
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                        <span>Querying user records...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : listToRender.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      No matching user accounts found.
+                      {isUsersLoading ? (
+                        <div className="flex justify-center items-center gap-2">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                          <span>Querying user records...</span>
+                        </div>
+                      ) : (
+                        "No matching user accounts found."
+                      )}
                     </td>
                   </tr>
                 ) : (
@@ -1094,11 +1138,20 @@ function DashboardPageContent() {
                 )}
               </tbody>
             </table>
+              {isUsersLoading && listToRender.length > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-sm rounded-2xl">
+                  <div className="flex justify-center items-center gap-2 text-slate-400">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                    <span>Querying user records...</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="md:hidden flex flex-col gap-3">
-            {isUsersLoading ? (
-              <div className="flex justify-center items-center gap-2 py-8 text-slate-400 text-sm">
+          <div className="md:hidden flex flex-col gap-3 min-h-[440px]">
+            {isUsersLoading && listToRender.length === 0 ? (
+              <div className="flex justify-center items-center gap-2 h-[440px] text-slate-400 text-sm">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
                 <span>Querying user records...</span>
               </div>
@@ -1169,22 +1222,51 @@ function DashboardPageContent() {
           </div>
 
           {usersTotalPages > 1 && (
-            <div className="flex items-center justify-between mt-4 bg-white dark:bg-[#121212] border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm animate-fadeIn">
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4 bg-white dark:bg-[#121212] border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm animate-fadeIn">
               <span className="text-xs font-semibold text-slate-500">
                 Page {usersPage} of {usersTotalPages} ({usersTotalItems} total users)
               </span>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
+                  type="button"
                   disabled={usersPage <= 1}
                   onClick={() => setUsersPage(p => Math.max(1, p - 1))}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
                 >
                   Previous
                 </button>
+                {Array.from({ length: usersTotalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === usersTotalPages || Math.abs(p - usersPage) <= 1)
+                  .reduce<number[]>((acc, p, idx, arr) => {
+                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push(-1);
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p) =>
+                    p === -1 ? (
+                      <span key={`e-${p}`} className="px-1 text-xs text-slate-400 dark:text-zinc-500">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setUsersPage(p)}
+                        className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition ${
+                          p === usersPage
+                            ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+                            : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ),
+                  )}
                 <button
+                  type="button"
                   disabled={usersPage >= usersTotalPages}
                   onClick={() => setUsersPage(p => Math.min(usersTotalPages, p + 1))}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
                 >
                   Next
                 </button>
