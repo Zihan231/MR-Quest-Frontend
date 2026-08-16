@@ -374,7 +374,7 @@ function DashboardPageContent() {
       setOverviewActivity(activityRes.data || null);
       setOverviewAtRisk(atRiskRes.data || []);
     } catch (err: any) {
-      setOverviewError(err.response?.data?.message || "Failed to load exam data.");
+      setOverviewError(err.response?.data?.message || "Failed to load task data.");
     } finally {
       setOverviewLoading(false);
     }
@@ -412,7 +412,7 @@ function DashboardPageContent() {
       toast.success(`"${item.title}" restored.`);
       loadTrash();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to restore exam group.");
+      toast.error(err.response?.data?.message || "Failed to restore task group.");
     }
   };
 
@@ -423,10 +423,10 @@ function DashboardPageContent() {
       async () => {
         try {
           await api.delete(`/exam-groups/${item.id}/permanent`);
-          toast.success("Exam group permanently deleted.");
+          toast.success("Task group permanently deleted.");
           loadTrash();
         } catch (err: any) {
-          toast.error(err.response?.data?.message || "Failed to delete exam group.");
+          toast.error(err.response?.data?.message || "Failed to delete task group.");
         }
       },
       "Delete Forever",
@@ -676,21 +676,21 @@ function DashboardPageContent() {
               Welcome back, {name} <Sparkles className="text-yellow-500 h-5 w-5 animate-pulse" />
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-              Here is what is happening across your exam platform.
+              Here is what is happening across your task platform.
             </p>
           </div>
         </div>
 
-        {/* ================= Section A: Exam Pipeline (blue family) ================= */}
+        {/* ================= Section A: Task Pipeline (blue family) ================= */}
         <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-500/20 dark:bg-blue-500/5">
           <div className="mb-4 flex items-center gap-2">
             <FileText className="text-blue-600" size={18} />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">Exam Pipeline</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">Task Pipeline</h3>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard icon={<FileText size={18} />} label="Total Exams" value={examGroups.length} accent="#3b82f6" tooltip="Sum of all draft and active exams in the platform." />
-            <StatCard icon={<UserCheck size={18} />} label="Active" value={active.length} accent="#0ea5e9" tooltip="Exams currently open and available for students to participate." />
-            <StatCard icon={<FileClock size={18} />} label="Draft" value={draft.length} accent="#64748b" tooltip="Exams currently in preparation that are not yet visible to students." />
+            <StatCard icon={<FileText size={18} />} label="Total Tasks" value={examGroups.length} accent="#3b82f6" tooltip="Sum of all draft and active tasks in the platform." />
+            <StatCard icon={<UserCheck size={18} />} label="Active" value={active.length} accent="#0ea5e9" tooltip="Tasks currently open and available for students to participate." />
+            <StatCard icon={<FileClock size={18} />} label="Draft" value={draft.length} accent="#64748b" tooltip="Tasks currently in preparation that are not yet visible to students." />
           </div>
         </div>
 
@@ -702,8 +702,8 @@ function DashboardPageContent() {
           </div>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard icon={<UsersIcon size={18} />} label="Total Students" value={totalStudents} accent="#8b5cf6" tooltip="Total number of student accounts registered on this platform." />
-            <StatCard icon={<UserCheck size={18} />} label="Active (30d)" value={overviewActivity?.activeCount ?? 0} accent="#10b981" tooltip="Unique students who logged in or submitted an exam within the last 30 days." />
-            <StatCard icon={<UserX size={18} />} label="Inactive" value={overviewActivity?.inactiveCount ?? 0} accent="#f59e0b" tooltip="Registered students who have not had any login or exam activity in the last 30 days." />
+            <StatCard icon={<UserCheck size={18} />} label="Active (30d)" value={overviewActivity?.activeCount ?? 0} accent="#10b981" tooltip="Unique students who logged in or submitted a task within the last 30 days." />
+            <StatCard icon={<UserX size={18} />} label="Inactive" value={overviewActivity?.inactiveCount ?? 0} accent="#f59e0b" tooltip="Registered students who have not had any login or task activity in the last 30 days." />
             <StatCard icon={<Activity size={18} />} label="Engagement" value={`${overviewActivity?.activePercent ?? 0}%`} accent="#06b6d4" tooltip="Percentage of active students out of the total registered students (Active / Total)." />
           </div>
         </div>
@@ -715,7 +715,7 @@ function DashboardPageContent() {
               <AlertTriangle className="text-amber-600" size={18} />
               <div className="flex items-center gap-1">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Needs Attention</h3>
-                <InfoTooltip content="Students whose latest exam score dropped by 20% or more compared to their previous exam." />
+                <InfoTooltip content="Students whose latest task score dropped by 20% or more compared to their previous task." />
               </div>
             </div>
             <span className={`text-xs font-bold ${atRiskCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
@@ -748,12 +748,12 @@ function DashboardPageContent() {
           )}
         </div>
 
-        {/* ================= Recent Exams ================= */}
-        <Card title="Recent Exams" subtitle="Your latest created exams and their current status">
+        {/* ================= Recent Tasks ================= */}
+        <Card title="Recent Tasks" subtitle="Your latest created tasks and their current status">
           {examGroups.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
               <BookOpen size={36} className="text-slate-300 dark:text-zinc-700" />
-              <p className="text-sm text-slate-500">No exams created yet.</p>
+              <p className="text-sm text-slate-500">No tasks created yet.</p>
             </div>
           ) : (
             <div className="flex flex-col divide-y divide-slate-100 dark:divide-zinc-800">
@@ -1012,7 +1012,7 @@ function DashboardPageContent() {
                   <th className="py-3 px-4 font-semibold text-xs uppercase">Name</th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase">Role</th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase">Region</th>
-                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Exams</th>
+                  <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Tasks</th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Avg Score</th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Best</th>
                   <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Performance</th>
@@ -1131,7 +1131,7 @@ function DashboardPageContent() {
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div className="rounded-lg bg-white p-2 dark:bg-zinc-900">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Exams</p>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Tasks</p>
                       <p className="font-bold text-slate-700 dark:text-zinc-200">{u.totalExams || 0}</p>
                     </div>
                     <div className="rounded-lg bg-white p-2 dark:bg-zinc-900">
@@ -1282,7 +1282,7 @@ function DashboardPageContent() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">Recycle Bin</h2>
             <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-              Deleted exam groups are kept here briefly before being permanently removed.
+              Deleted task groups are kept here briefly before being permanently removed.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1309,7 +1309,7 @@ function DashboardPageContent() {
             <input
               value={trashQuery}
               onChange={(e) => setTrashQuery(e.target.value)}
-              placeholder="Search deleted exams..."
+              placeholder="Search deleted tasks..."
               className="w-full rounded-xl border border-slate-200 bg-transparent pl-9 pr-3 py-2.5 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100"
             />
           </div>
@@ -1329,7 +1329,7 @@ function DashboardPageContent() {
           <div className="rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 p-12 text-center">
             <Trash2 size={28} className="mx-auto text-slate-300 dark:text-zinc-700" />
             <p className="mt-3 text-sm font-semibold text-slate-500 dark:text-zinc-400">Recycle bin is empty</p>
-            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Deleted exam groups will appear here.</p>
+            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Deleted task groups will appear here.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -1450,7 +1450,7 @@ function DashboardPageContent() {
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 mb-5">
                   <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Exams Taken</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Tasks Taken</p>
                     <p className="mt-1 text-xl font-bold text-slate-900 dark:text-zinc-50">{perfModalData.overall?.totalExams || 0}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
@@ -1469,7 +1469,7 @@ function DashboardPageContent() {
 
                 {(perfModalData.examHistory || []).length > 0 && (
                   <div className="mb-5">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-50 mb-3">Exam History</h4>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-50 mb-3">Task History</h4>
                     <div className="flex flex-col gap-2">
                       {(perfModalData.examHistory as any[]).slice().reverse().map((rec) => (
                         <div key={rec.submissionId} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3 text-sm dark:border-zinc-800">
@@ -1529,7 +1529,7 @@ function DashboardPageContent() {
                 )}
 
                 {(!perfModalData.examHistory || perfModalData.examHistory.length === 0) && (
-                  <p className="py-8 text-center text-sm text-slate-400">No exam submissions recorded for this user yet.</p>
+                  <p className="py-8 text-center text-sm text-slate-400">No task submissions recorded for this user yet.</p>
                 )}
               </>
             )}

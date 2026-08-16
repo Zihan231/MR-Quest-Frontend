@@ -30,7 +30,7 @@ export default function TakeExamPage() {
         }
         setExamGroup(eg);
       }).catch((err) => {
-        toast.error(err.response?.data?.message || "Failed to start exam.");
+        toast.error(err.response?.data?.message || "Failed to start task.");
         router.push(`/exams/${examGroupId}`);
       }).finally(() => setLoading(false));
   }, [examGroupId, router]);
@@ -47,7 +47,7 @@ export default function TakeExamPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Starting exam...</p>
+        <p className="text-sm text-slate-500">Starting task...</p>
       </div>
     );
   }
@@ -55,7 +55,7 @@ export default function TakeExamPage() {
   if (!examGroup) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
-        <p className="text-sm text-red-500">Exam not found.</p>
+        <p className="text-sm text-red-500">Task not found.</p>
       </div>
     );
   }

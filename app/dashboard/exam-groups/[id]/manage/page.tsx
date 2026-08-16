@@ -111,7 +111,7 @@ export default function ManageExamGroupPage() {
         setSubmissions(subRes.data || []);
       })
       .catch(() => {
-        toast.error("Failed to load exam group.");
+        toast.error("Failed to load task group.");
         router.push("/exams");
       })
       .finally(() => setLoading(false));
@@ -211,7 +211,7 @@ export default function ManageExamGroupPage() {
     }
 
     if (newQuestion.type === 'Video' && questions.some((q) => q.type === 'Video')) {
-      toast.error("Only one Video question is allowed per exam.");
+      toast.error("Only one Video question is allowed per task.");
       return;
     }
 
@@ -238,7 +238,7 @@ export default function ManageExamGroupPage() {
     }
 
     if (newQuestion.type === 'Video' && questions.some((q) => q.type === 'Video')) {
-      toast.error("Only one Video question is allowed per exam.");
+      toast.error("Only one Video question is allowed per task.");
       return;
     }
 
@@ -369,11 +369,11 @@ export default function ManageExamGroupPage() {
       const payload: any = { ...editForm };
 
       await api.patch(`/exam-groups/${examGroupId}`, payload);
-      toast.success("Exam updated!");
+      toast.success("Task updated!");
       setIsEditModalOpen(false);
       reload();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update exam group.");
+      toast.error(err.response?.data?.message || "Failed to update task group.");
     } finally {
       setIsSavingEdit(false);
     }
@@ -383,7 +383,7 @@ export default function ManageExamGroupPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Loading exam...</p>
+        <p className="text-sm text-slate-500">Loading task...</p>
       </div>
     );
   }
@@ -391,7 +391,7 @@ export default function ManageExamGroupPage() {
   if (!examGroup) {
     return (
       <div className="flex flex-col items-center gap-4">
-        <p className="text-sm text-red-500">Exam not found.</p>
+        <p className="text-sm text-red-500">Task not found.</p>
         <button
           onClick={() => router.push("/exams")}
           className="text-sm text-blue-600 underline"
@@ -985,11 +985,11 @@ export default function ManageExamGroupPage() {
         }
       />
 
-      {/* Edit Exam Group Modal */}
+      {/* Edit Task Group Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] overflow-y-auto max-h-[90vh]">
-            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Edit Exam Group</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Edit Task Group</h3>
             <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Title *</label>

@@ -35,7 +35,7 @@ export default function LoginPage() {
           </svg>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-50">MrQuest</h1>
-        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Exam Platform</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Task Platform</p>
       </div>
 
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-[#121212]">

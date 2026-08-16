@@ -65,8 +65,8 @@ export function ExamsList() {
     <div className="flex flex-col gap-5 pb-6 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Exams</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Browse and take available exams.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Tasks</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Browse and take available tasks.</p>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ export function ExamsList() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search exams..."
+            placeholder="Search tasks..."
             value={search}
             onChange={(e) => { setPage(1); setSearch(e.target.value); }}
             className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
@@ -94,13 +94,13 @@ export function ExamsList() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-sm text-slate-500">Loading exams...</p>
+          <p className="text-sm text-slate-500">Loading tasks...</p>
         </div>
       ) : (
         examGroups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
             <BookOpen size={40} className="text-slate-300 dark:text-zinc-700" />
-            <p className="text-sm text-slate-500">No exams found.</p>
+            <p className="text-sm text-slate-500">No tasks found.</p>
             {hasActiveFilters && (
               <button onClick={resetFilters} className="text-xs font-bold text-blue-600 dark:text-blue-400 underline">
                 Clear filters

@@ -64,7 +64,7 @@ export function ExamGroupCard({
               <button 
                 onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition dark:hover:bg-red-950/30"
-                title="Delete Exam"
+                title="Delete Task"
               >
                 <Trash2 size={16} />
               </button>
@@ -122,7 +122,7 @@ export function ExamGroupCard({
                 disabled={examGroup.status !== "active"}
                 className="flex items-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-bold transition"
               >
-                <Play size={12} /> Take Exam
+                <Play size={12} /> Take Task
               </button>
             )
           )}

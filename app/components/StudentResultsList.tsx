@@ -65,7 +65,7 @@ export function StudentResultsList() {
     <div className="flex flex-col gap-5 pb-6 animate-fadeIn">
       <div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Results</h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">View evaluations and AI analysis feedback for exams you completed.</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">View evaluations and AI analysis feedback for tasks you completed.</p>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-end gap-3 bg-white dark:bg-[#121212] border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm">
@@ -73,7 +73,7 @@ export function StudentResultsList() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search completed exams..."
+            placeholder="Search completed tasks..."
             value={search}
             onChange={(e) => {
               setPage(1);
@@ -100,8 +100,8 @@ export function StudentResultsList() {
       ) : results.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
           <Award size={40} className="text-slate-300 dark:text-zinc-700 animate-pulse" />
-          <p className="text-sm text-slate-500 font-semibold">No exam results found.</p>
-          <p className="text-xs text-slate-400">Exams you take will be listed here once submitted.</p>
+          <p className="text-sm text-slate-500 font-semibold">No task results found.</p>
+          <p className="text-xs text-slate-400">Tasks you take will be listed here once submitted.</p>
           {hasActiveFilters && (
             <button onClick={resetFilters} className="text-xs font-bold text-blue-600 dark:text-blue-400 underline">
               Clear search

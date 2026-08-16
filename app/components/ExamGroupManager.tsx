@@ -68,7 +68,7 @@ export function ExamGroupManager() {
       const res = await api.post("/exam-groups", payload);
       const createdExam = res.data;
 
-      toast.success("Exam created successfully!");
+      toast.success("Task created successfully!");
       setIsCreateModalOpen(false);
       if (createdExam && createdExam.id) {
         window.location.href = `/exams/${createdExam.id}`;
@@ -76,7 +76,7 @@ export function ExamGroupManager() {
         fetchExamGroups();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create exam.");
+      toast.error(err.response?.data?.message || "Failed to create task.");
       setIsCreating(false);
     }
   };
@@ -84,21 +84,21 @@ export function ExamGroupManager() {
   const confirmDelete = async (id: number) => {
     try {
       await api.delete(`/exam-groups/${id}`);
-      toast.success("Exam moved to recycle bin.");
+      toast.success("Task moved to recycle bin.");
       setDeleteExamId(null);
       fetchExamGroups();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete exam.");
+      toast.error(err.response?.data?.message || "Failed to delete task.");
     }
   };
 
   const handleStatusChange = async (examGroupId: number, newStatus: "active" | "draft") => {
     try {
       await api.patch(`/exam-groups/${examGroupId}`, { status: newStatus });
-      toast.success(`Exam status updated to ${newStatus.toUpperCase()}`);
+      toast.success(`Task status updated to ${newStatus.toUpperCase()}`);
       setExamGroups(prev => prev.map(eg => eg.id === examGroupId ? { ...eg, status: newStatus } : eg));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update exam status.");
+      toast.error(err.response?.data?.message || "Failed to update task status.");
     }
   };
 
@@ -106,14 +106,14 @@ export function ExamGroupManager() {
     <div className="flex flex-col gap-5 pb-8 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Exams</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Create and manage exams with MCQ, creative, and video questions.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-50">Tasks</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">Create and manage tasks with MCQ, creative, and video questions.</p>
         </div>
         <button
           onClick={openCreateModal}
           className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm shrink-0 self-start sm:self-center"
         >
-          <PlusCircle size={15} /> Create Exam
+          <PlusCircle size={15} /> Create Task
         </button>
       </div>
 
@@ -123,7 +123,7 @@ export function ExamGroupManager() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search exams..."
+              placeholder="Search tasks..."
               value={search}
               onChange={(e) => { setPage(1); setSearch(e.target.value); }}
               className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
@@ -142,7 +142,7 @@ export function ExamGroupManager() {
                 { value: "cancelled", label: "Cancelled" },
               ]}
               className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
-              ariaLabel="Filter exams by status"
+              ariaLabel="Filter tasks by status"
             />
           </div>
         </div>
@@ -151,12 +151,12 @@ export function ExamGroupManager() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-sm text-slate-500">Loading exams...</p>
+          <p className="text-sm text-slate-500">Loading tasks...</p>
         </div>
       ) : examGroups.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
           <BookOpen size={40} className="text-slate-300 dark:text-zinc-700" />
-          <p className="text-sm text-slate-500">No exams found.</p>
+          <p className="text-sm text-slate-500">No tasks found.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -202,8 +202,8 @@ export function ExamGroupManager() {
           <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212]">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50">Create Exam</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Fill in the details below. You can add questions after creating the exam.</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50">Create Task</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Fill in the details below. You can add questions after creating the task.</p>
               </div>
               <button onClick={() => setIsCreateModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
                 <X size={18} />
@@ -229,10 +229,10 @@ export function ExamGroupManager() {
                     { value: "active", label: "Active (visible to students)" },
                   ]}
                   className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
-                  ariaLabel="Exam status"
+                  ariaLabel="Task status"
                 />
                 {createForm.status === "draft" && (
-                  <p className="text-[11px] text-slate-400 mt-1">Questions you add are saved but students won't see this exam until it's set to Active.</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Questions you add are saved but students won't see this task until it's set to Active.</p>
                 )}
               </div>
               <div className="flex justify-end gap-2 mt-2">
@@ -244,7 +244,7 @@ export function ExamGroupManager() {
                   className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 text-xs font-bold transition"
                 >
                   {isCreating && <Loader2 size={14} className="animate-spin" />}
-                  {isCreating ? "Creating..." : "Create Exam"} <ArrowRight size={14} />
+                  {isCreating ? "Creating..." : "Create Task"} <ArrowRight size={14} />
                 </button>
               </div>
             </div>
@@ -256,8 +256,8 @@ export function ExamGroupManager() {
         isOpen={deleteExamId !== null}
         onCancel={() => setDeleteExamId(null)}
         onConfirm={() => deleteExamId && confirmDelete(deleteExamId)}
-        title="Delete Exam"
-        message="Move this exam to the recycle bin? You can restore it later from the Recycle Bin in your dashboard."
+        title="Delete Task"
+        message="Move this task to the recycle bin? You can restore it later from the Recycle Bin in your dashboard."
         confirmText="Move to Recycle Bin"
       />
     </div>

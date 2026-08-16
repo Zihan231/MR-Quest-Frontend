@@ -73,7 +73,7 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
               MrQuest
             </h1>
             <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-              Exam Platform
+              Task Platform
             </p>
           </div>
         </div>
@@ -100,7 +100,7 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
             />
             <NavItem
               icon={<CheckSquare size={18} />}
-              label="Manage Exams"
+              label="Manage Tasks"
               href="/exams"
               active={isExamsActive}
               onClick={onClose}
@@ -144,7 +144,7 @@ function SidebarContent({ isMobile = false, onClose }: { isMobile?: boolean; onC
           <>
             <NavItem
               icon={<CheckSquare size={18} />}
-              label="Exams"
+              label="Tasks"
               href="/exams"
               active={isExamsActive}
               onClick={onClose}
@@ -637,7 +637,7 @@ function SidebarSkeleton({ isMobile = false }: { isMobile?: boolean }) {
         </div>
         <div>
           <h1 className="text-lg font-bold leading-tight text-slate-900 dark:text-zinc-50">MrQuest</h1>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Exam Platform</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Task Platform</p>
         </div>
       </div>
       <div className="flex flex-col gap-1">

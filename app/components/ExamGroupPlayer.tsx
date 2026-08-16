@@ -256,14 +256,14 @@ export function ExamGroupPlayer({
       });
 
       if (missingAnswer) {
-        toast.error("Answering all questions (MCQ, CQ, and Video) is mandatory before submitting the exam.");
+        toast.error("Answering all questions (MCQ, CQ, and Video) is mandatory before submitting the task.");
         return;
       }
     }
 
     try {
       setIsSubmitting(true);
-      toast.success("Submitting exam in the background...");
+      toast.success("Submitting task in the background...");
 
       const finalAnswers = { ...currentAnswers };
       const uploadKeys = Object.keys(currentVideos);
@@ -293,16 +293,16 @@ export function ExamGroupPlayer({
       }));
 
       if (answerArray.length === 0) {
-        toast.error("No answers selected. Submitting empty exam.");
+        toast.error("No answers selected. Submitting empty task.");
       }
 
       const res = await api.post(`/exam-groups/${examGroupId}/submit`, { answers: answerArray });
       setResult(res.data);
       setSubmitted(true);
-      toast.success("Exam submitted successfully!");
+      toast.success("Task submitted successfully!");
       onComplete?.();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to submit exam.");
+      toast.error(err.response?.data?.message || "Failed to submit task.");
     } finally {
       setIsSubmitting(false);
     }
@@ -352,7 +352,7 @@ export function ExamGroupPlayer({
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Loading exam...</p>
+        <p className="text-sm text-slate-500">Loading task...</p>
       </div>
     );
   }
@@ -369,7 +369,7 @@ export function ExamGroupPlayer({
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4 animate-fadeIn">
         <CheckCircle className="h-14 w-14 text-green-500" />
-        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">Exam Submitted</h2>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">Task Submitted</h2>
         <p className="text-sm text-slate-500">Your answers have been auto-evaluated.</p>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 flex flex-col items-center gap-2 shadow-sm">
           <span className="text-xs text-slate-400 uppercase tracking-wider">Marks Obtained</span>
@@ -542,7 +542,7 @@ export function ExamGroupPlayer({
           className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2.5 text-xs font-bold transition shadow-sm"
         >
           {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-          {isSubmitting ? "Submitting..." : "Submit Exam"}
+          {isSubmitting ? "Submitting..." : "Submit Task"}
         </button>
       </div>
 

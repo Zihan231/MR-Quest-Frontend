@@ -203,13 +203,13 @@ export function MonitoringDashboard() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500">Exam</label>
+            <label className="text-xs font-semibold text-slate-500">Task</label>
             <select
               value={examFilter}
               onChange={(e) => setExamFilter(e.target.value)}
               className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
             >
-              <option value="">All exams</option>
+              <option value="">All tasks</option>
               {examGroups.map((eg) => (
                 <option key={eg.id} value={eg.id}>{eg.title}</option>
               ))}
@@ -257,7 +257,7 @@ export function MonitoringDashboard() {
           {activity && (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <StatCard icon={<Users size={18} />} label="Total Students" value={activity.totalStudents || 0} accent="#3b82f6" tooltip="Total number of student accounts registered on this platform." />
-              <StatCard icon={<Activity size={18} />} label={`Active (${activity.days}d)`} value={activity.activeCount || 0} accent="#10b981" tooltip="Unique students who logged in or submitted an exam within the active window." />
+              <StatCard icon={<Activity size={18} />} label={`Active (${activity.days}d)`} value={activity.activeCount || 0} accent="#10b981" tooltip="Unique students who logged in or submitted a task within the active window." />
               <StatCard icon={<GraduationCap size={18} />} label="Inactive" value={activity.inactiveCount || 0} accent="#f59e0b" tooltip="Registered students who have not had any activity within the active window." />
               <StatCard icon={<TrendingUp size={18} />} label="Engagement Rate" value={`${activity.activePercent ?? 0}%`} accent="#8b5cf6" tooltip="Percentage of active students out of the total registered students (Active / Total)." />
             </div>
@@ -285,7 +285,7 @@ export function MonitoringDashboard() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-bold text-slate-900 dark:text-zinc-50">{entry.avgScore}%</p>
-                        <p className="text-xs text-slate-400">{entry.totalExams} exam(s)</p>
+                        <p className="text-xs text-slate-400">{entry.totalExams} task(s)</p>
                       </div>
                     </div>
                   ))}
@@ -293,7 +293,7 @@ export function MonitoringDashboard() {
               )}
             </Card>
 
-            <Card title="Score Distribution" subtitle="How student submissions fall across score bands" tooltip="Histogram showing student counts grouped by their exam percentage scores.">
+            <Card title="Score Distribution" subtitle="How student submissions fall across score bands" tooltip="Histogram showing student counts grouped by their task percentage scores.">
               {scoreDist.buckets.length === 0 ? (
                 <p className="py-8 text-center text-sm text-slate-400">No data available.</p>
               ) : (
@@ -364,8 +364,8 @@ export function MonitoringDashboard() {
 
           <Card
             title="At-Risk Students"
-            subtitle={`Students whose latest score dropped more than ${threshold}% versus their previous exam`}
-            tooltip="Students whose latest exam score dropped by more than the configured threshold compared to their previous exam."
+            subtitle={`Students whose latest score dropped more than ${threshold}% versus their previous task`}
+            tooltip="Students whose latest task score dropped by more than the configured threshold compared to their previous task."
           >
             {atRisk.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">

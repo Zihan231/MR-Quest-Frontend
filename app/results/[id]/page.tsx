@@ -58,7 +58,7 @@ export default function ExamResultsDetailPage() {
   if (!examGroup || !submission) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-sm text-red-500 font-semibold">No submission found for this exam.</p>
+        <p className="text-sm text-red-500 font-semibold">No submission found for this task.</p>
         <button
           onClick={() => router.push("/results")}
           className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
@@ -111,8 +111,8 @@ export default function ExamResultsDetailPage() {
               {/* Marks Obtained Card */}
               <div className="w-full bg-slate-50 dark:bg-zinc-900/50 rounded-2xl p-6 border border-slate-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-3">
                 <div className="flex flex-col items-center justify-center gap-1.5">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Exam Results</h3>
-                  <p className="text-xs text-slate-500 mb-1">{isPending ? "Your submission is undergoing evaluation." : "Your exam has been fully evaluated."}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Task Results</h3>
+                  <p className="text-xs text-slate-500 mb-1">{isPending ? "Your submission is undergoing evaluation." : "Your task has been fully evaluated."}</p>
                 </div>
                 <div className="bg-white dark:bg-zinc-900 px-6 py-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col items-center gap-1">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Marks Obtained</span>

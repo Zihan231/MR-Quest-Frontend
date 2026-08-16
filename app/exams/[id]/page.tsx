@@ -34,7 +34,7 @@ export default function ExamDetailPage() {
         }
       })
       .catch(() => {
-        toast.error("Failed to load exam.");
+        toast.error("Failed to load task.");
         router.push("/exams");
       })
       .finally(() => setLoading(false));
@@ -44,7 +44,7 @@ export default function ExamDetailPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Loading exam...</p>
+        <p className="text-sm text-slate-500">Loading task...</p>
       </div>
     );
   }
@@ -56,7 +56,7 @@ export default function ExamDetailPage() {
   if (!examGroup) {
     return (
       <div className="flex flex-col items-center gap-4 py-20">
-        <p className="text-sm text-red-500 font-semibold">Exam not found.</p>
+        <p className="text-sm text-red-500 font-semibold">Task not found.</p>
         <button
           onClick={() => router.push("/exams")}
           className="text-sm text-blue-600 underline font-bold"
@@ -76,7 +76,7 @@ export default function ExamDetailPage() {
           onClick={() => router.push("/exams")}
           className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 mb-2 self-start"
         >
-          <ArrowLeft size={14} /> Back to Exams
+          <ArrowLeft size={14} /> Back to Tasks
         </button>
 
         <div className="flex flex-col gap-6">

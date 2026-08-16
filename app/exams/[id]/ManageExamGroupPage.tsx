@@ -51,8 +51,8 @@ const emptyQuestion: QuestionFormState = {
   type: "MCQ",
   options: ["", "", "", ""],
   correctAnswers: [],
-  marks: "1",
-  accuracyMarks: "0",
+  marks: "",
+  accuracyMarks: "",
   evaluationType: "AI",
   referenceScript: "",
   referenceFileName: "",
@@ -297,7 +297,7 @@ export default function ManageExamGroupPage() {
         setSubmissions(subRes.data || []);
       })
       .catch(() => {
-        toast.error("Failed to load exam group.");
+        toast.error("Failed to load task group.");
         router.push("/exams");
       })
       .finally(() => setLoading(false));
@@ -450,7 +450,7 @@ export default function ManageExamGroupPage() {
     }
 
     if (newQuestion.type === 'Video' && questions.some((q) => q.type === 'Video')) {
-      toast.error("Only one Video question is allowed per exam.");
+      toast.error("Only one Video question is allowed per task.");
       return;
     }
 
@@ -598,11 +598,11 @@ export default function ManageExamGroupPage() {
       const payload: any = { ...editForm };
 
       await api.patch(`/exam-groups/${examGroupId}`, payload);
-      toast.success("Exam updated!");
+      toast.success("Task updated!");
       setIsEditModalOpen(false);
       reload();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update exam group.");
+      toast.error(err.response?.data?.message || "Failed to update task group.");
     } finally {
       setIsSavingEdit(false);
     }
@@ -612,7 +612,7 @@ export default function ManageExamGroupPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm text-slate-500">Loading exam...</p>
+        <p className="text-sm text-slate-500">Loading task...</p>
       </div>
     );
   }
@@ -620,7 +620,7 @@ export default function ManageExamGroupPage() {
   if (!examGroup) {
     return (
       <div className="flex flex-col items-center gap-4">
-        <p className="text-sm text-red-500">Exam not found.</p>
+        <p className="text-sm text-red-500">Task not found.</p>
         <button
           onClick={() => router.push("/exams")}
           className="text-sm text-blue-600 underline"
@@ -755,19 +755,24 @@ export default function ManageExamGroupPage() {
                       </button>
                     </div>
 
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Type your question here..."
-                      value={newQuestion.questionText}
-                      onChange={(e) =>
-                        setNewQuestion({
-                          ...newQuestion,
-                          questionText: e.target.value,
-                        })
-                      }
-                      className="w-full bg-transparent text-lg font-semibold text-slate-800 dark:text-zinc-50 placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none resize-none border-b border-transparent focus:border-slate-100 dark:focus:border-zinc-800 transition min-h-[60px]"
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                        Question Title
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        placeholder="Type your question here..."
+                        value={newQuestion.questionText}
+                        onChange={(e) =>
+                          setNewQuestion({
+                            ...newQuestion,
+                            questionText: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800 px-4 py-3 text-sm font-semibold text-slate-800 dark:text-zinc-50 placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:border-blue-500 transition resize-none min-h-[60px]"
+                      />
+                    </div>
                   </div>
 
                   {newQuestion.type === 'MCQ' && (
@@ -1235,7 +1240,7 @@ export default function ManageExamGroupPage() {
                             <div className="grid grid-cols-1 gap-2 text-center text-xs">
                               <div className="bg-white dark:bg-zinc-900 p-2 rounded-lg border border-slate-100 dark:border-zinc-800/80">
                                 <p className="text-[10px] text-slate-400 uppercase font-bold">Script Accuracy</p>
-                                <p className="font-bold text-slate-800 dark:text-zinc-200 mt-0.5">{q.accuracyMarks ?? q.marks} m</p>
+                                <p className="font-bold text-slate-800 dark:text-zinc-200 mt-0.5">{q.accuracyMarks ?? q.marks} marks</p>
                               </div>
                             </div>
                             {q.evaluationType === 'AI' && q.referenceScript && (
@@ -1433,11 +1438,11 @@ export default function ManageExamGroupPage() {
         }
       />
 
-      {/* Edit Exam Group Modal */}
+      {/* Edit Task Group Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] overflow-y-auto max-h-[90vh]">
-            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Edit Exam Group</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Edit Task Group</h3>
             <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Title *</label>
