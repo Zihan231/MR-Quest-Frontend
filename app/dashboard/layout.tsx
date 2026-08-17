@@ -241,10 +241,14 @@ export default function DashboardLayout({
 
   const openEditModal = async () => {
     setIsDropdownOpen(false);
-    setIsEditModalOpen(true);
+    setNameInput("");
+    setPhoneInput("");
+    setAddressInput("");
+    setRegion({});
     setProfileError("");
     setProfilePictureInput(null);
     setProfilePreviewUrl(null);
+    setIsEditModalOpen(true);
     try {
       const res = await api.get("/auth/profile");
       setNameInput(res.data.name || "");
@@ -551,7 +555,7 @@ export default function DashboardLayout({
                   <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)}
-                    placeholder="e.g. +1 555-0100"
+                    placeholder="e.g. +880 1712-345678"
                     className="w-full rounded-xl border border-slate-200 bg-transparent pl-10 pr-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800"
                   />
                 </div>

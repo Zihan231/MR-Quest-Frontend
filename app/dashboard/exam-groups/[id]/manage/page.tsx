@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "@/libs/api";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
 import {
   ArrowLeft,
   Plus,
@@ -698,7 +699,7 @@ export default function ManageExamGroupPage() {
                 {questions.map((q, idx) => (
                   <div
                     key={q.id}
-                    className="rounded-2xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-[#18181b] shadow-sm overflow-hidden p-5 sm:p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700"
+                    className={`border-l-4 ${getTypeAccentClass(q.type)} rounded-2xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-[#18181b] shadow-sm overflow-hidden p-5 sm:p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700`}
                   >
                     {editingQuestionId === q.id ? (
                       <div className="flex flex-col gap-4">
@@ -822,8 +823,8 @@ export default function ManageExamGroupPage() {
                       <>
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <span className="bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide">
-                              MCQ
+                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide ${getTypeChipClass(q.type)}`}>
+                              {q.type}
                             </span>
                             <span className="text-slate-500 dark:text-zinc-500 text-xs font-bold tracking-wider">
                               Q{idx + 1}

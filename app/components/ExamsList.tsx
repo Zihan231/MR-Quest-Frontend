@@ -47,7 +47,7 @@ export function ExamsList() {
           }
         }));
 
-        setExamGroups(enrichedData);
+        setExamGroups(enrichedData.filter((eg: any) => !eg.hasSubmitted));
         setMeta(newMeta);
       })
       .catch(() => setExamGroups([]))

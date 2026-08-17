@@ -6,6 +6,7 @@ import { api } from "@/libs/api";
 import { ArrowLeft, CheckCircle, Video, Loader2, Clock, AlertCircle } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { ReferenceDocViewer } from "@/components/ReferenceDocViewer";
+import { getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
 
 const getAbsoluteDocUrl = (url: string) => {
   if (!url) return "";
@@ -162,17 +163,20 @@ export default function ExamResultsPage() {
                     const q = ans.question;
                     if (!q) return null;
                     return (
-                      <div key={idx} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
+                      <div key={idx} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm`}>
                         <div className="flex items-start gap-3">
                           <span className="text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
                           <div className="flex-1">
                             <div className="flex justify-between items-start gap-3">
                               <p className="text-base font-semibold text-slate-900 dark:text-zinc-100">{q.questionText}</p>
-                              {!isPending && q.type !== 'Video' && (
-                                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-2 py-1 rounded-md shrink-0">
-                                  {ans.marksAwarded} / {q.marks} marks
-                                </span>
-                              )}
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${getTypeChipClass(q.type)}`}>{q.type}</span>
+                                {!isPending && q.type !== 'Video' && (
+                                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 px-2 py-1 rounded-md shrink-0">
+                                    {ans.marksAwarded} / {q.marks} marks
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="mt-3 flex flex-col gap-2">
                               {q.type === 'MCQ' ? (

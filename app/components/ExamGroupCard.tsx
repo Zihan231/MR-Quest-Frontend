@@ -72,7 +72,15 @@ export function ExamGroupCard({
           </div>
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">
+        <p 
+          className="text-xs text-slate-500 dark:text-zinc-400"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
           {examGroup.description || "No description provided."}
         </p>
 
@@ -120,9 +128,9 @@ export function ExamGroupCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onTake?.(); }}
                 disabled={examGroup.status !== "active"}
-                className="flex items-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-bold transition"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 text-sm font-bold transition"
               >
-                <Play size={12} /> Take Task
+                <Play size={14} /> Take Task
               </button>
             )
           )}

@@ -7,6 +7,7 @@ import { CheckCircle, Loader2, AlertTriangle, Video, UploadCloud, X, Maximize2, 
 import dynamic from "next/dynamic";
 import { WebcamRecorder } from "./WebcamRecorder";
 import { ReferenceDocViewer } from "./ReferenceDocViewer";
+import { sortByType, getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
 
 const getAbsoluteDocUrl = (url: string) => {
   if (!url) return "";
@@ -225,7 +226,7 @@ export function ExamGroupPlayer({
 
   useEffect(() => {
     if (!examGroup?.questions) return;
-    setQuestions(examGroup.questions);
+    setQuestions(sortByType(examGroup.questions, (q: any) => q.type));
     const submission = examGroup.submissions?.[0];
     if (submission) {
       setSubmitted(true);
@@ -391,12 +392,15 @@ export function ExamGroupPlayer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6">
         {questions.map((q: any, idx: number) => (
-          <div key={q.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
+          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm`}>
             <div className="flex items-start gap-3">
               <span className="text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
               <div className="flex-1">
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 mb-2 leading-relaxed">{q.questionText}</p>
-                <span className="text-[10px] text-slate-400 mt-1 inline-block">{q.marks} marks</span>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400">{q.marks} marks</span>
+                  <span className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${getTypeChipClass(q.type)}`}>{q.type}</span>
+                </div>
                 <div className="mt-3 flex flex-col gap-2">
                   {q.type === 'MCQ' ? (
                     <>

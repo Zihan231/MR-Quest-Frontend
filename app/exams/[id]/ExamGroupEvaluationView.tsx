@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { api } from "@/libs/api";
-import { CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Loader2, X, Mail, User as UserIcon, Phone, MapPin, Award, Calendar, Shield } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { ReferenceDocViewer } from "@/components/ReferenceDocViewer";
+import { sortByType, getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
 
 type Props = {
   submission: any;
@@ -12,7 +13,7 @@ type Props = {
   onClose: () => void;
   onEvaluated: () => void;
 };
-
+  
 const getAbsoluteDocUrl = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -24,6 +25,9 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
   const [evaluations, setEvaluations] = useState<Record<number, { marksAwarded: number | string; evaluatorComment: string }>>({});
   const [initialEvaluations, setInitialEvaluations] = useState<Record<number, { marksAwarded: number | string; evaluatorComment: string }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewingProfile, setViewingProfile] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   // Initialize evaluations state, pre-filling previous marks/feedback
   React.useEffect(() => {
@@ -69,6 +73,20 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
         evaluatorComment: comment
       }
     }));
+  };
+
+  const openProfile = async () => {
+    setViewingProfile(true);
+    setLoadingProfile(true);
+    setProfileData(null);
+    try {
+      const res = await api.get(`/auth/profile/${submission.user?.userId}`);
+      setProfileData(res.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to load user profile");
+    } finally {
+      setLoadingProfile(false);
+    }
   };
 
   const submitEvaluation = async () => {
@@ -204,6 +222,8 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
 
   if (!submission) return null;
 
+  const sortedAnswers = sortByType(submission?.answers || [], (a: any) => a.question?.type);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] flex flex-col max-h-[95vh]">
@@ -219,11 +239,17 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
               Score: <span className="font-bold text-blue-600">{submission.marksObtained}</span> points | Submitted: {new Date(submission.submittedAt).toLocaleString()}
             </p>
           </div>
+          <button
+            onClick={openProfile}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 transition border border-slate-200 dark:border-zinc-700 shrink-0"
+          >
+            <UserIcon size={14} /> View Profile
+          </button>
         </div>
         
         <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-6">
-          {submission.answers && submission.answers.length > 0 ? (
-            submission.answers.map((ans: any, idx: number) => {
+          {sortedAnswers.length > 0 ? (
+            sortedAnswers.map((ans: any, idx: number) => {
               const q = ans.question;
               if (!q) return null;
 
@@ -247,15 +273,18 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
                   : aiCommentParsed?.overallScore ?? ans.marksAwarded;
 
               return (
-                <div key={idx} className="bg-slate-50 dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
+                <div key={idx} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-slate-50 dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm`}>
                   <div className="flex items-start gap-3">
                     <span className="text-sm font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
                     <div className="flex-1">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-2">
                         <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100">{q.questionText}</p>
-                        <span className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 px-2 py-1 rounded-md ml-4 shrink-0">
-                          {q.marks} Marks
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0 ml-4">
+                          <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${getTypeChipClass(q.type)}`}>{q.type}</span>
+                          <span className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 px-2 py-1 rounded-md shrink-0">
+                            {q.marks} Marks
+                          </span>
+                        </div>
                       </div>
 
                       {/* Answer Display */}
@@ -397,6 +426,123 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
           </button>
         </div>
       </div>
+
+      {/* View Profile Modal */}
+      {viewingProfile && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setViewingProfile(false)}>
+          <div
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-zinc-50 flex items-center gap-2">
+                <UserIcon size={16} className="text-blue-600" /> User Profile
+              </h3>
+              <button
+                onClick={() => setViewingProfile(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 p-1.5 rounded-full transition"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {loadingProfile ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Loader2 size={28} className="animate-spin text-blue-600" />
+                <p className="text-xs text-slate-500">Loading profile...</p>
+              </div>
+            ) : profileData ? (
+              <div className="flex flex-col gap-5">
+                {/* Avatar + Name */}
+                <div className="flex flex-col items-center gap-3 pb-4 border-b border-slate-100 dark:border-zinc-800">
+                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-3xl font-bold text-white ring-2 ring-blue-100 dark:ring-blue-900">
+                    {profileData.profilePictureUrl ? (
+                      <img src={getAbsoluteDocUrl(profileData.profilePictureUrl)} alt={profileData.name} className="h-full w-full object-cover" />
+                    ) : (
+                      (profileData.name || "?").charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-slate-900 dark:text-zinc-50">{profileData.name}</p>
+                    <div className="flex items-center justify-center gap-2 mt-1">
+                      <span className="text-xs font-mono text-slate-400">{profileData.userId}</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
+                        profileData.role === 'admin'
+                          ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30'
+                          : profileData.role === 'employee'
+                          ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30'
+                          : 'bg-green-50 text-green-600 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30'
+                      }`}>
+                        <Shield size={9} /> {profileData.role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800">
+                    <Mail size={15} className="text-slate-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Email</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300 truncate">{profileData.email || "—"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800">
+                    <Phone size={15} className="text-slate-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Phone</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{profileData.phoneNumber || "—"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800">
+                    <MapPin size={15} className="text-slate-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Address</p>
+                      <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{profileData.address || "—"}</p>
+                    </div>
+                  </div>
+
+                  {profileData.division || profileData.district || profileData.upazila ? (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800">
+                      <Award size={15} className="text-slate-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Region</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                          {[profileData.division, profileData.district, profileData.upazila].filter(Boolean).join(" / ") || "—"}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {profileData.createdAt && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-zinc-800">
+                      <Calendar size={15} className="text-slate-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Member Since</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{new Date(profileData.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end border-t border-slate-100 dark:border-zinc-800 pt-4">
+                  <button
+                    onClick={() => setViewingProfile(false)}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 text-xs font-bold transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 text-center py-8">Failed to load profile.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

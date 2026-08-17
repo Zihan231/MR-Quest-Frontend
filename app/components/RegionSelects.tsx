@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import { api } from "@/libs/api";
+let cachedDivisions = null;
+const cachedDistricts = {};
+const cachedUpazilas = {};
+
 
 export interface RegionValue {
   division?: string;
@@ -21,10 +25,10 @@ interface RegionSelectsProps {
 }
 
 const selectCls =
-  "w-full rounded-xl border border-slate-200 bg-transparent px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100 disabled:opacity-50";
+  "w-full rounded-xl border border-slate-200 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100 disabled:opacity-50";
 
 const compactSelectCls =
-  "w-full rounded-xl border border-slate-200 bg-transparent px-3 py-2 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100 disabled:opacity-50";
+  "w-full rounded-xl border border-slate-200 bg-white dark:bg-zinc-900 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100 disabled:opacity-50";
 
 export function RegionSelects({
   value,
@@ -90,12 +94,17 @@ export function RegionSelects({
   useEffect(() => {
     if (value.division) {
       loadDistricts(value.division);
+    } else {
+      setDistricts([]);
+      setUpazilas([]);
     }
   }, [value.division, loadDistricts]);
 
   useEffect(() => {
     if (value.division && value.district) {
       loadUpazilas(value.division, value.district);
+    } else {
+      setUpazilas([]);
     }
   }, [value.division, value.district, loadUpazilas]);
 
@@ -125,7 +134,7 @@ export function RegionSelects({
             }}
             className={compact ? compactSelectCls : selectCls}
           >
-            <option value="">{loadingDivisions ? "Loading..." : "Select division"}</option>
+            <option value="">Select division</option>
             {divisions.map((d) => (
               <option key={d.name} value={d.name}>
                 {d.name} ({d.districtCount} districts)
@@ -147,7 +156,7 @@ export function RegionSelects({
             }}
             className={compact ? compactSelectCls : selectCls}
           >
-            <option value="">{loadingDistricts ? "Loading..." : "Select district"}</option>
+            <option value="">Select district</option>
             {districts.map((d) => (
               <option key={d.name} value={d.name}>
                 {d.name}
@@ -168,7 +177,7 @@ export function RegionSelects({
             onChange={(e) => update({ upazila: e.target.value || undefined })}
             className={compact ? compactSelectCls : selectCls}
           >
-            <option value="">{loadingUpazilas ? "Loading..." : "Select upazila"}</option>
+            <option value="">Select upazila</option>
             {upazilas.map((u) => (
               <option key={u} value={u}>
                 {u}

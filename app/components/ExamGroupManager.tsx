@@ -138,8 +138,6 @@ export function ExamGroupManager() {
                 { value: "", label: "All statuses" },
                 { value: "draft", label: "Draft" },
                 { value: "active", label: "Active" },
-                { value: "completed", label: "Completed" },
-                { value: "cancelled", label: "Cancelled" },
               ]}
               className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
               ariaLabel="Filter tasks by status"

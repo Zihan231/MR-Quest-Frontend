@@ -149,7 +149,15 @@ export function StudentResultsList() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">
+                  <p 
+                    className="text-xs text-slate-500 dark:text-zinc-400"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
                     {eg.description || "No description provided."}
                   </p>
 
