@@ -6,6 +6,7 @@ import { CheckCircle2, ArrowLeft, Loader2, X, Mail, User as UserIcon, Phone, Map
 import { toast } from "react-hot-toast";
 import { ReferenceDocViewer } from "@/components/ReferenceDocViewer";
 import { sortByType, getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
+import { roleLabel } from "@/libs/roleLabel";
 
 type Props = {
   submission: any;
@@ -466,14 +467,14 @@ export default function ExamGroupEvaluationView({ submission, examGroupId, onClo
                     <p className="text-lg font-bold text-slate-900 dark:text-zinc-50">{profileData.name}</p>
                     <div className="flex items-center justify-center gap-2 mt-1">
                       <span className="text-xs font-mono text-slate-400">{profileData.userId}</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                         profileData.role === 'admin'
                           ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30'
                           : profileData.role === 'employee'
                           ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30'
                           : 'bg-green-50 text-green-600 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30'
                       }`}>
-                        <Shield size={9} /> {profileData.role}
+                        <Shield size={9} /> {roleLabel(profileData.role)}
                       </span>
                     </div>
                   </div>

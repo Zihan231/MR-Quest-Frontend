@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { useUser } from "@/hooks/useUser";
 import { useTheme } from "@/context/ThemeContext";
+import { roleLabel } from "@/libs/roleLabel";
 
 import { NotificationBell } from "@/components/NotificationBell";
 import { RegionSelects } from "@/components/RegionSelects";
@@ -345,7 +346,7 @@ export default function DashboardLayout({
                       {name}
                     </p>
                     <p className="text-[10px] font-bold tracking-wider text-blue-600 dark:text-blue-400">
-                      {role.toUpperCase()}
+                      {roleLabel(role)}
                     </p>
                   </div>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white dark:bg-blue-500 overflow-hidden">

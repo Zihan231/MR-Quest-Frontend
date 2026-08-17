@@ -6,6 +6,7 @@ import { SelectDropdown } from "@/components/SelectDropdown";
 import { useUser } from "@/hooks/useUser";
 import { api } from "@/libs/api";
 import { getActionBadgeClasses, formatAction, getRoleBadgeClasses } from "@/libs/actionColors";
+import { roleLabel } from "@/libs/roleLabel";
 import {
   Loader2,
   Search,
@@ -203,7 +204,7 @@ export default function ActivityLogPage() {
               <SelectDropdown
                 value={targetType}
                 onChange={(v) => { setTargetType(v); setPage(1); }}
-                options={[{ value: "", label: "All types" }, ...TARGET_TYPES.map(t => ({ value: t, label: t }))]}
+                options={[{ value: "", label: "All types" }, ...TARGET_TYPES.map(t => ({ value: t, label: roleLabel(t) }))]}
                 className={inputCls}
                 ariaLabel="Filter by target type"
               />
@@ -270,7 +271,7 @@ export default function ActivityLogPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded border text-sm font-semibold ${getRoleBadgeClasses(log.actorRole)}`}>{log.actorRole}</span>
+                        <span className={`px-2 py-1 rounded border text-sm font-semibold ${getRoleBadgeClasses(log.actorRole)}`}>{roleLabel(log.actorRole)}</span>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2.5 py-1 rounded-full text-sm font-bold border whitespace-nowrap ${getActionBadgeClasses(log.action)}`}>{formatAction(log.action)}</span>

@@ -83,6 +83,7 @@ export function MonitoringDashboard() {
   const [examFilter, setExamFilter] = useState<string>("");
   const [threshold, setThreshold] = useState(20);
   const [days, setDays] = useState(30);
+  const [regionPage, setRegionPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
 
   const loadAll = useCallback(async () => {
@@ -105,6 +106,7 @@ export function MonitoringDashboard() {
 
       setLeaderboard(lb.data || []);
       setRegionStats(rs.data || { divisions: [], districts: [] });
+      setRegionPage(1);
       setAtRisk(ar.data || []);
       setActivity(act.data || null);
       setScoreDist(sd.data || { buckets: [] });
@@ -172,6 +174,34 @@ export function MonitoringDashboard() {
   }
 
   const maxBucketCount = Math.max(...scoreDist.buckets.map((b: any) => b.count), 1);
+
+  const REGION_PAGE_SIZE = 10;
+  const regionRows: any[] = [
+    ...regionStats.divisions.map((d: any) => ({
+      level: "Division",
+      key: `div-${d.name}`,
+      name: d.name,
+      division: null,
+      participants: d.participants,
+      submissions: d.submissions,
+      avgScore: d.avgScore,
+      topPerformer: d.topPerformer,
+    })),
+    ...regionStats.districts.map((d: any) => ({
+      level: "District",
+      key: `dis-${d.division}-${d.name}`,
+      name: d.name,
+      division: d.division,
+      participants: d.participants,
+      submissions: d.submissions,
+      avgScore: d.avgScore,
+      topPerformer: d.topPerformer,
+    })),
+  ];
+  const regionTotalPages = Math.max(1, Math.ceil(regionRows.length / REGION_PAGE_SIZE));
+  const safeRegionPage = Math.min(regionPage, regionTotalPages);
+  const regionStart = (safeRegionPage - 1) * REGION_PAGE_SIZE;
+  const visibleRegionRows = regionRows.slice(regionStart, regionStart + REGION_PAGE_SIZE);
 
   return (
     <div className="flex flex-col gap-6 pb-8 animate-fadeIn">
@@ -319,7 +349,8 @@ export function MonitoringDashboard() {
             {regionStats.divisions.length === 0 ? (
               <p className="py-8 text-center text-sm text-slate-400">No region activity recorded yet.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-slate-400 dark:border-zinc-800">
@@ -332,33 +363,74 @@ export function MonitoringDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {regionStats.divisions.map((d: any) => (
-                      <tr key={`div-${d.name}`} className="border-b border-slate-100 dark:border-zinc-800">
-                        <td className="py-3 px-3 text-xs font-bold text-blue-600 dark:text-blue-400">Division</td>
-                        <td className="py-3 px-3 font-semibold text-slate-800 dark:text-zinc-100">{d.name}</td>
-                        <td className="py-3 px-3 text-center text-slate-600 dark:text-zinc-300">{d.participants}</td>
-                        <td className="py-3 px-3 text-center text-slate-600 dark:text-zinc-300">{d.submissions}</td>
-                        <td className="py-3 px-3 text-center font-bold text-slate-800 dark:text-zinc-100">{d.avgScore}%</td>
-                        <td className="py-3 px-3 text-xs text-slate-500 dark:text-zinc-400">
-                          {d.topPerformer ? `${d.topPerformer.name} (${d.topPerformer.avgScore}%)` : "—"}
+                    {visibleRegionRows.map((d: any) => (
+                      <tr key={d.key} className="border-b border-slate-100 dark:border-zinc-800">
+                        <td className={`py-3 px-3 text-xs ${d.level === "Division" ? "font-bold text-blue-600 dark:text-blue-400" : "text-slate-400"}`}>{d.level}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-800 dark:text-zinc-100">
+                          {d.name} {d.division ? <span className="text-xs font-normal text-slate-400">({d.division})</span> : null}
                         </td>
-                      </tr>
-                    ))}
-                    {regionStats.districts.map((d: any) => (
-                      <tr key={`dis-${d.division}-${d.name}`} className="border-b border-slate-100 dark:border-zinc-800">
-                        <td className="py-3 px-3 text-xs text-slate-400">District</td>
-                        <td className="py-3 px-3 text-slate-700 dark:text-zinc-200">{d.name} <span className="text-xs text-slate-400">({d.division})</span></td>
                         <td className="py-3 px-3 text-center text-slate-600 dark:text-zinc-300">{d.participants}</td>
                         <td className="py-3 px-3 text-center text-slate-600 dark:text-zinc-300">{d.submissions}</td>
                         <td className="py-3 px-3 text-center font-bold text-slate-800 dark:text-zinc-100">{d.avgScore}%</td>
                         <td className="py-3 px-3 text-xs text-slate-500 dark:text-zinc-400">
-                          {d.topPerformer ? `${d.topPerformer.name} (${d.topPerformer.avgScore}%)` : "—"}
+                          {d.topPerformer ? `${d.topPerformer.name} (${Number(d.topPerformer.avgScore).toFixed(2)}%)` : "—"}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+              {regionTotalPages > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+                  <span className="text-xs font-semibold text-slate-500">
+                    Showing {regionStart + 1}–{Math.min(regionStart + REGION_PAGE_SIZE, regionRows.length)} of {regionRows.length}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={safeRegionPage <= 1}
+                      onClick={() => setRegionPage((p) => Math.max(1, p - 1))}
+                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: regionTotalPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === regionTotalPages || Math.abs(p - safeRegionPage) <= 1)
+                      .reduce<number[]>((acc, p, idx, arr) => {
+                        if (idx > 0 && p - arr[idx - 1] > 1) acc.push(-1);
+                        acc.push(p);
+                        return acc;
+                      }, [])
+                      .map((p) =>
+                        p === -1 ? (
+                          <span key={`e-${p}`} className="px-1 text-xs text-slate-400 dark:text-zinc-500">…</span>
+                        ) : (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setRegionPage(p)}
+                            className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition ${
+                              p === safeRegionPage
+                                ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+                                : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ),
+                      )}
+                    <button
+                      type="button"
+                      disabled={safeRegionPage >= regionTotalPages}
+                      onClick={() => setRegionPage((p) => Math.min(regionTotalPages, p + 1))}
+                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </Card>
 

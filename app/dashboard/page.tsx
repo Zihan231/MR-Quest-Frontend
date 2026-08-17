@@ -7,6 +7,7 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 import { RegionSelects } from "@/components/RegionSelects";
 import SubmissionAnswersView from "@/components/SubmissionAnswersView";
 import { api } from "@/libs/api";
+import { roleLabel } from "@/libs/roleLabel";
 import {
   Users as UsersIcon,
   BookOpen,
@@ -571,11 +572,11 @@ function DashboardPageContent() {
   const handleRoleChange = (userId: string, newRole: string) => {
     triggerConfirm(
       "Change User Clearance",
-      `Are you sure you want to change this user's authorization role to ${newRole.toUpperCase()}? This modifies their dashboard panels.`,
+      `Are you sure you want to change this user's authorization role to ${roleLabel(newRole)}? This modifies their dashboard panels.`,
       async () => {
         try {
           await api.patch(`/auth/users/${userId}/role`, { role: newRole });
-          toast.success(`Clearance role changed to ${newRole.toUpperCase()} successfully!`);
+          toast.success(`Clearance role changed to ${roleLabel(newRole)} successfully!`);
           loadPaginatedUsers(usersPage);
         } catch (err: any) {
           toast.error(err.response?.data?.message || "Failed to update clearance role.");
@@ -608,8 +609,8 @@ function DashboardPageContent() {
         upazila: employeeRegion.upazila || undefined,
       });
 
-      toast.success("Employee registered successfully!");
-      setEmployeeFormSuccess("Employee registered successfully!");
+      toast.success("Trainer registered successfully!");
+      setEmployeeFormSuccess("Trainer registered successfully!");
       setEmployeeEmail("");
       setEmployeeName("");
       setEmployeePassword("");
@@ -625,7 +626,7 @@ function DashboardPageContent() {
         setEmployeeFormSuccess("");
       }, 1500);
     } catch (err: any) {
-      setEmployeeFormError(err.response?.data?.message || "Failed to register employee.");
+      setEmployeeFormError(err.response?.data?.message || "Failed to register trainer.");
     } finally {
       setIsCreatingEmployee(false);
     }
@@ -743,6 +744,14 @@ function DashboardPageContent() {
             <span className={`text-xs font-bold ${atRiskCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
               {atRiskCount > 0 ? `${atRiskCount} at-risk student${atRiskCount === 1 ? "" : "s"}` : "All clear"}
             </span>
+            {atRiskCount > 0 && (
+              <button
+                onClick={() => router.push("/dashboard/analytics")}
+                className="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 hover:text-amber-800 dark:border-amber-800 dark:bg-transparent dark:text-amber-400 dark:hover:bg-amber-900/30"
+              >
+                See all
+              </button>
+            )}
           </div>
           {atRiskCount > 0 ? (
             <div className="flex flex-col gap-2">
@@ -831,7 +840,7 @@ function DashboardPageContent() {
             }}
             className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition shrink-0 self-start sm:self-center"
           >
-            <PlusCircle size={15} /> Add Employee
+            <PlusCircle size={15} /> Add Trainer
           </button>
         </div>
 
@@ -922,8 +931,8 @@ function DashboardPageContent() {
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
                   >
                     <option value="">All roles</option>
-                    <option value="user">User</option>
-                    <option value="employee">Employee</option>
+                    <option value="user">Mr</option>
+                    <option value="employee">Trainer</option>
                     <option value="admin">Admin</option>
                   </select>
                 </FilterGroup>
@@ -1064,7 +1073,7 @@ function DashboardPageContent() {
                   <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[95px]">
                     <span className="inline-flex items-center gap-1">
                       Role
-                      <InfoTooltip placement="bottom" content="Access level: User (student), Employee (can create/manage tasks), Administrator (full access + user management)." />
+                      <InfoTooltip placement="bottom" content="Access level: Mr (student), Trainer (can create/manage tasks), Administrator (full access + user management)." />
                     </span>
                   </th>
                   <th className="py-3 px-2.5 font-semibold text-xs uppercase w-[70px]">
@@ -1129,8 +1138,8 @@ function DashboardPageContent() {
                           onClick={(e) => e.stopPropagation()}
                           className="rounded-lg border border-slate-200 bg-white p-1 text-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                         >
-                          <option value="user">User</option>
-                          <option value="employee">Employee</option>
+                          <option value="user">Mr</option>
+                          <option value="employee">Trainer</option>
                           <option value="admin">Administrator</option>
                         </select>
                       </td>
@@ -1230,8 +1239,8 @@ function DashboardPageContent() {
                       onClick={(e) => e.stopPropagation()}
                       className="rounded-lg border border-slate-200 bg-white p-1.5 text-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
-                      <option value="user">User</option>
-                      <option value="employee">Employee</option>
+                      <option value="user">Mr</option>
+                      <option value="employee">Trainer</option>
                       <option value="admin">Administrator</option>
                     </select>
                     <button
@@ -1331,7 +1340,7 @@ function DashboardPageContent() {
             </div>
             <div>
               <label className="text-xs font-semibold text-slate-400">Clearance Role</label>
-              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mt-0.5">{role}</p>
+              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5">{roleLabel(role)}</p>
             </div>
           </div>
         </div>
@@ -1555,7 +1564,7 @@ function DashboardPageContent() {
                   <p className="font-mono text-xs text-slate-500 dark:text-zinc-400 font-bold">{perfModalData.profile.userId}</p>
                   <p className="text-xs text-slate-500 dark:text-zinc-400">{perfModalData.profile.email}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">{perfModalData.profile.role}</span>
+                    <span className="text-[11px] font-bold tracking-wider text-blue-600 dark:text-blue-400">{roleLabel(perfModalData.profile.role)}</span>
                     <PerformanceBadge level={perfModalData.overall?.performanceLevel} />
                   </div>
                   <div className="mt-1 grid w-full grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -1702,7 +1711,7 @@ function DashboardPageContent() {
           <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] animate-scaleIn" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50 flex items-center gap-2">
-                <PlusCircle size={18} className="text-emerald-600" /> Register Employee
+                <PlusCircle size={18} className="text-emerald-600" /> Register Trainer
               </h3>
               <button onClick={() => setIsCreateEmployeeModalOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800">
                 <X size={18} />
@@ -1729,7 +1738,7 @@ function DashboardPageContent() {
                 <label className="text-xs font-semibold text-slate-500">Email</label>
                 <input
                   type="email" value={employeeEmail} onChange={(e) => setEmployeeEmail(e.target.value)}
-                  placeholder="employee@company.com" required
+                  placeholder="trainer@company.com" required
                   className="rounded-xl border border-slate-200 bg-transparent px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none dark:border-zinc-800 dark:text-zinc-100"
                 />
               </div>
@@ -1789,7 +1798,7 @@ function DashboardPageContent() {
                       <Loader2 size={15} className="animate-spin" /> Registering...
                     </>
                   ) : (
-                    "Register Employee"
+                    "Register Trainer"
                   )}
                 </button>
               </div>
