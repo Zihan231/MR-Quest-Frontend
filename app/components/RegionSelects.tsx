@@ -22,6 +22,7 @@ interface RegionSelectsProps {
   compact?: boolean;
   tint?: "blue" | "slate";
   className?: string;
+  row?: boolean;
 }
 
 const selectCls =
@@ -38,6 +39,7 @@ export function RegionSelects({
   compact = false,
   tint = "slate",
   className = "",
+  row = false,
 }: RegionSelectsProps) {
   const [divisions, setDivisions] = useState<{ name: string; districtCount: number }[]>([]);
   const [districts, setDistricts] = useState<{ name: string; upazilaCount: number }[]>([]);
@@ -117,6 +119,75 @@ export function RegionSelects({
     setUpazilas([]);
     onChange({});
   };
+
+  if (row) {
+    return (
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-3 ${className}`}>
+        <div className="flex flex-col gap-1.5">
+          <label className={`flex items-center gap-1 font-semibold ${compact ? "text-xs" : "text-sm"} ${labelColor}`}>
+            <MapPin size={12} /> Division
+          </label>
+          <select
+            value={value.division || ""}
+            disabled={disabled}
+            onChange={(e) => {
+              const division = e.target.value;
+              update({ division: division || undefined, district: undefined, upazila: undefined });
+            }}
+            className={compact ? compactSelectCls : selectCls}
+          >
+            <option value="">Select division</option>
+            {divisions.map((d) => (
+              <option key={d.name} value={d.name}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className={`flex items-center gap-1 font-semibold ${compact ? "text-xs" : "text-sm"} ${labelColor}`}>
+            <MapPin size={12} /> District
+          </label>
+          <select
+            value={value.district || ""}
+            disabled={disabled || !value.division || loadingDistricts}
+            onChange={(e) => {
+              const district = e.target.value;
+              update({ district: district || undefined, upazila: undefined });
+            }}
+            className={compact ? compactSelectCls : selectCls}
+          >
+            <option value="">Select district</option>
+            {districts.map((d) => (
+              <option key={d.name} value={d.name}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className={`flex items-center gap-1 font-semibold ${compact ? "text-xs" : "text-sm"} ${labelColor}`}>
+            <MapPin size={12} /> Upazila
+          </label>
+          <select
+            value={value.upazila || ""}
+            disabled={disabled || !value.district || loadingUpazilas}
+            onChange={(e) => update({ upazila: e.target.value || undefined })}
+            className={compact ? compactSelectCls : selectCls}
+          >
+            <option value="">Select upazila</option>
+            {upazilas.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>

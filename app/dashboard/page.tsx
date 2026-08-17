@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { RegionSelects } from "@/components/RegionSelects";
-import SubmissionAnswersView from "@/components/SubmissionAnswersView";
+import PerformanceModal, { PerformanceBadge } from "@/components/PerformanceModal";
 import { api } from "@/libs/api";
 import { roleLabel } from "@/libs/roleLabel";
 import {
@@ -22,7 +22,6 @@ import {
   CalendarDays,
   FileText,
   Download,
-  BarChart3,
   SlidersHorizontal,
   RotateCcw,
   AlertTriangle,
@@ -158,27 +157,6 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${map[status] || map.draft}`}>
       {status}
-    </span>
-  );
-}
-
-function PerformanceBadge({ level }: { level?: string | null }) {
-  const map: Record<string, string> = {
-    good: "bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400",
-    average: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
-    "below-average": "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
-    poor: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400",
-  };
-  const label: Record<string, string> = {
-    good: "Good",
-    average: "Average",
-    "below-average": "Below Avg",
-    poor: "Poor",
-  };
-  if (!level) return <span className="text-xs text-slate-400">No data</span>;
-  return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${map[level] || "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300"}`}>
-      {label[level] || level}
     </span>
   );
 }
@@ -334,10 +312,6 @@ function DashboardPageContent() {
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false);
   const [showEmployeePassword, setShowEmployeePassword] = useState(false);
   const [perfModalUser, setPerfModalUser] = useState<any | null>(null);
-  const [perfModalData, setPerfModalData] = useState<any | null>(null);
-  const [isPerfLoading, setIsPerfLoading] = useState(false);
-  const [viewingSubmission, setViewingSubmission] = useState<any | null>(null);
-  const [isSubmissionLoading, setIsSubmissionLoading] = useState(false);
 
   // Recycle bin state
   const [trashItems, setTrashItems] = useState<any[]>([]);
@@ -538,37 +512,6 @@ function DashboardPageContent() {
     }
   }, [currentTab, usersPage, loadPaginatedUsers]);
 
-  const loadPerformance = useCallback(async (userId: string) => {
-    setIsPerfLoading(true);
-    setPerfModalData(null);
-    try {
-      const res = await api.get(`/auth/users/${userId}/performance`);
-      setPerfModalData(res.data);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to load performance data.");
-    } finally {
-      setIsPerfLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (perfModalUser) {
-      loadPerformance(perfModalUser.userId);
-    }
-  }, [perfModalUser, loadPerformance]);
-
-  const loadSubmissionForView = useCallback(async (examGroupId: number, submissionId: number) => {
-    setIsSubmissionLoading(true);
-    try {
-      const res = await api.get(`/exam-groups/${examGroupId}/submissions/${submissionId}`);
-      setViewingSubmission(res.data);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to load submission answers.");
-    } finally {
-      setIsSubmissionLoading(false);
-    }
-  }, []);
-
   const handleRoleChange = (userId: string, newRole: string) => {
     triggerConfirm(
       "Change User Clearance",
@@ -746,7 +689,7 @@ function DashboardPageContent() {
             </span>
             {atRiskCount > 0 && (
               <button
-                onClick={() => router.push("/dashboard/analytics")}
+                onClick={() => router.push("/dashboard/analytics#at-risk")}
                 className="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 hover:text-amber-800 dark:border-amber-800 dark:bg-transparent dark:text-amber-400 dark:hover:bg-amber-900/30"
               >
                 See all
@@ -1119,7 +1062,7 @@ function DashboardPageContent() {
                   </tr>
                 ) : (
                   listToRender.map((u) => (
-                    <tr key={u.userId} onClick={() => { setPerfModalUser(u); setPerfModalData(null); }} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-zinc-800 dark:hover:bg-zinc-800/10 cursor-pointer transition-colors">
+                    <tr key={u.userId} onClick={() => { setPerfModalUser(u); }} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-zinc-800 dark:hover:bg-zinc-800/10 cursor-pointer transition-colors">
                       <td className="py-4 px-2.5 font-mono text-slate-500 dark:text-zinc-400 font-bold truncate">{u.userId}</td>
                       <td className="py-4 px-2.5 font-medium text-slate-900 dark:text-zinc-50">
                         <div className="flex items-center gap-3 min-w-0">
@@ -1166,7 +1109,6 @@ function DashboardPageContent() {
                           onClick={(e) => {
                             e.stopPropagation();
                             setPerfModalUser(u);
-                            setPerfModalData(null);
                           }}
                           title="View performance profile"
                           className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-400 dark:hover:bg-blue-900/40"
@@ -1200,7 +1142,7 @@ function DashboardPageContent() {
               <p className="py-8 text-center text-slate-400 text-sm">No matching user accounts found.</p>
             ) : (
               listToRender.map((u) => (
-                <div key={u.userId} onClick={() => { setPerfModalUser(u); setPerfModalData(null); }} className="rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40 p-4 flex flex-col gap-3 cursor-pointer transition-colors hover:border-blue-200 dark:hover:border-blue-900/40">
+                <div key={u.userId} onClick={() => { setPerfModalUser(u); }} className="rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40 p-4 flex flex-col gap-3 cursor-pointer transition-colors hover:border-blue-200 dark:hover:border-blue-900/40">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400">
                       {u.name.charAt(0).toUpperCase()}
@@ -1247,7 +1189,6 @@ function DashboardPageContent() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setPerfModalUser(u);
-                        setPerfModalData(null);
                       }}
                       title="View performance profile"
                       className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-400 dark:hover:bg-blue-900/40"
@@ -1531,179 +1472,10 @@ function DashboardPageContent() {
     <div className="min-h-screen">
       {renderViewContent()}
 
+
       {/* Performance Details Modal */}
-      {perfModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={() => setPerfModalUser(null)}>
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212] animate-scaleIn" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50 flex items-center gap-2">
-                <BarChart3 size={18} className="text-blue-600" /> Performance Analytics
-              </h3>
-              <button onClick={() => setPerfModalUser(null)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800">
-                <X size={18} />
-              </button>
-            </div>
+      <PerformanceModal user={perfModalUser} onClose={() => setPerfModalUser(null)} />
 
-            {isPerfLoading && (
-              <div className="flex justify-center items-center gap-2 py-12 text-slate-400 text-sm">
-                <Loader2 size={18} className="animate-spin" /> Analyzing performance records...
-              </div>
-            )}
-
-            {!isPerfLoading && perfModalData && (
-              <>
-                <div className="flex flex-col items-center gap-2 pb-5 border-b border-slate-100 dark:border-zinc-800 mb-5">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400 overflow-hidden">
-                    {perfModalData.profile.profilePictureUrl ? (
-                      <img src={perfModalData.profile.profilePictureUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      perfModalData.profile.name.charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <p className="font-bold text-slate-900 dark:text-zinc-50">{perfModalData.profile.name}</p>
-                  <p className="font-mono text-xs text-slate-500 dark:text-zinc-400 font-bold">{perfModalData.profile.userId}</p>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">{perfModalData.profile.email}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold tracking-wider text-blue-600 dark:text-blue-400">{roleLabel(perfModalData.profile.role)}</span>
-                    <PerformanceBadge level={perfModalData.overall?.performanceLevel} />
-                  </div>
-                  <div className="mt-1 grid w-full grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {[
-                      { label: "Phone", value: perfModalData.profile.phoneNumber },
-                      { label: "Address", value: perfModalData.profile.address },
-                      { label: "Region", value: [perfModalData.profile.division, perfModalData.profile.district, perfModalData.profile.upazila].filter(Boolean).join(", ") || null },
-                      { label: "Joined", value: perfModalData.profile.createdAt ? new Date(perfModalData.profile.createdAt).toLocaleDateString() : null },
-                    ].filter((item) => item.value).map((item) => (
-                      <div key={item.label} className="rounded-lg bg-slate-50 px-3 py-2 dark:bg-zinc-900/60">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{item.label}</p>
-                        <p className="mt-0.5 font-medium text-slate-700 break-words dark:text-zinc-200">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 mb-5">
-                  <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Tasks Taken</p>
-                    <p className="mt-1 text-xl font-bold text-slate-900 dark:text-zinc-50">{perfModalData.overall?.totalExams || 0}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Total Marks</p>
-                    <p className="mt-1 text-xl font-bold text-slate-900 dark:text-zinc-50">{perfModalData.overall?.totalMarks || 0}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Avg Score</p>
-                    <p className="mt-1 text-xl font-bold text-blue-600 dark:text-blue-400">{perfModalData.overall?.avgScore ? `${perfModalData.overall.avgScore}%` : "—"}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3 text-center dark:bg-zinc-900/60">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Best Score</p>
-                    <p className="mt-1 text-xl font-bold text-green-600 dark:text-green-400">{perfModalData.overall?.bestScore ? `${perfModalData.overall.bestScore}%` : "—"}</p>
-                  </div>
-                </div>
-
-                {(perfModalData.examHistory || []).length > 0 && (
-                  <div className="mb-5">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-50 mb-3">Task History</h4>
-                    <div className="flex flex-col gap-2">
-                      {(perfModalData.examHistory as any[]).slice().reverse().map((rec) => (
-                        <button
-                          key={rec.submissionId}
-                          type="button"
-                          onClick={() => {
-                            setViewingSubmission(null);
-                            if (rec.examGroupId && rec.submissionId) {
-                              loadSubmissionForView(rec.examGroupId, rec.submissionId);
-                            } else {
-                              toast.error("Unable to open submission answers for this record.");
-                            }
-                          }}
-                          title="View question & answers"
-                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3 text-sm text-left transition hover:border-blue-200 hover:bg-blue-50/40 dark:border-zinc-800 dark:hover:border-blue-900/40 dark:hover:bg-blue-900/10"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-semibold text-slate-700 truncate dark:text-zinc-200">{rec.examTitle}</p>
-                            <p className="text-xs text-slate-400">
-                              {new Date(rec.submittedAt).toLocaleDateString()} · Rank #{rec.rank} of {rec.totalParticipants} · {rec.marksObtained}/{rec.totalMarks} marks
-                            </p>
-                          </div>
-                          <span className="flex items-center gap-1.5 shrink-0">
-                            <span className={`text-sm font-bold ${rec.scorePercent >= 60 ? "text-green-600 dark:text-green-400" : rec.scorePercent >= 40 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-                              {rec.scorePercent}%
-                            </span>
-                            <Eye size={14} className="text-slate-400" />
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {perfModalData.weaknessAnalysis && (
-                  <div className="mb-5">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-50 mb-3">Weakness Analysis</h4>
-                    <div className="mb-3 flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm dark:bg-zinc-900/60">
-                      <span className="text-slate-500 dark:text-zinc-400">Overall mastery</span>
-                      <span className="font-bold text-slate-900 dark:text-zinc-50">{perfModalData.weaknessAnalysis.overallPercent}%</span>
-                    </div>
-                    {(perfModalData.weaknessAnalysis.breakdown || []).map((b: any) => (
-                      <div key={b.type} className="mb-2">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="font-semibold text-slate-600 dark:text-zinc-300">{b.type}</span>
-                          <span className="text-slate-400">{b.awardedMarks}/{b.maxMarks} marks · {b.percent}%</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${b.percent >= 60 ? "bg-green-500" : b.percent >= 40 ? "bg-amber-500" : "bg-red-500"}`}
-                            style={{ width: `${Math.min(100, b.percent)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    {perfModalData.weaknessAnalysis.video?.accuracy && (
-                      <div className="mt-3">
-                        <p className="text-xs font-semibold text-slate-600 dark:text-zinc-300 mb-2">Video Interview Breakdown</p>
-                        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm dark:bg-zinc-900/60">
-                          <span className="font-semibold text-slate-600 dark:text-zinc-300">Script Accuracy</span>
-                          <span className="font-bold text-slate-800 dark:text-zinc-100">
-                            {perfModalData.weaknessAnalysis.video.accuracy.percent}%
-                            <span className="text-xs font-normal text-slate-400"> ({perfModalData.weaknessAnalysis.video.accuracy.awarded}/{perfModalData.weaknessAnalysis.video.accuracy.max} marks)</span>
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {(!perfModalData.examHistory || perfModalData.examHistory.length === 0) && (
-                  <p className="py-8 text-center text-sm text-slate-400">No task submissions recorded for this user yet.</p>
-                )}
-              </>
-            )}
-
-            {!isPerfLoading && !perfModalData && (
-              <p className="py-8 text-center text-sm text-slate-400">Unable to load performance data.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Submission Answers Modal (read-only, opened from Task History) */}
-      {isSubmissionLoading && !viewingSubmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#121212]">
-            <div className="flex justify-center items-center gap-2 py-12 text-slate-400 text-sm">
-              <Loader2 size={18} className="animate-spin" /> Loading submission answers...
-            </div>
-          </div>
-        </div>
-      )}
-
-      {viewingSubmission && (
-        <SubmissionAnswersView
-          submission={viewingSubmission}
-          onClose={() => setViewingSubmission(null)}
-        />
-      )}
 
       {/* Create Employee Modal */}
       {isCreateEmployeeModalOpen && (
