@@ -1390,14 +1390,14 @@ function DashboardPageContent() {
   const renderTrash = () => {
     return (
       <div className="flex flex-col gap-6 pb-8 animate-fadeIn">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">Recycle Bin</h2>
             <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
               Deleted task groups are kept here briefly before being permanently removed.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={loadTrash}
               disabled={isLoadingTrash}
@@ -1408,7 +1408,7 @@ function DashboardPageContent() {
             <button
               onClick={emptyRecycleBin}
               disabled={trashItems.length === 0 || isEmptyingTrash}
-              className="flex items-center gap-2 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm ring-1 ring-inset ring-red-300 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:ring-red-200 dark:ring-red-900"
             >
               <Trash2 size={14} /> {isEmptyingTrash ? "Emptying..." : "Empty Recycle Bin"}
             </button>
