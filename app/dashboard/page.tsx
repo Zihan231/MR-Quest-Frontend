@@ -349,21 +349,22 @@ function DashboardPageContent() {
     setOverviewLoading(true);
     setOverviewError(null);
     try {
+      // Monitoring endpoints are admin-only; employees only load their tasks.
       const [examRes, activityRes, atRiskRes] = await Promise.all([
         api.get("/exam-groups", { params: { page: 1, limit: 100 } }),
-        api.get("/monitoring/activity", { params: { days: 30 } }),
-        api.get("/monitoring/at-risk", { params: { threshold: 20 } }),
+        isAdmin ? api.get("/monitoring/activity", { params: { days: 30 } }) : Promise.resolve(null),
+        isAdmin ? api.get("/monitoring/at-risk", { params: { threshold: 20 } }) : Promise.resolve(null),
       ]);
       const data = Array.isArray(examRes.data) ? examRes.data : (examRes.data.data || []);
       setExamGroups(data);
-      setOverviewActivity(activityRes.data || null);
-      setOverviewAtRisk(atRiskRes.data || []);
+      setOverviewActivity(activityRes?.data || null);
+      setOverviewAtRisk(atRiskRes?.data || []);
     } catch (err: any) {
       setOverviewError(err.response?.data?.message || "Failed to load task data.");
     } finally {
       setOverviewLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (currentTab === "overview") loadOverview();
@@ -660,6 +661,7 @@ function DashboardPageContent() {
           </div>
         </div>
 
+        {isAdmin && (<>
         {/* ================= Section B: Participants (violet/emerald family) ================= */}
         <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-5 dark:border-violet-500/20 dark:bg-violet-500/5">
           <div className="mb-4 flex items-center gap-2">
@@ -721,6 +723,7 @@ function DashboardPageContent() {
             </p>
           )}
         </div>
+        </>)}
 
         {/* ================= Recent Tasks ================= */}
         <Card title="Recent Tasks" subtitle="Your latest created tasks and their current status">
