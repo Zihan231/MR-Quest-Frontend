@@ -11,6 +11,36 @@ export const api = axios.create({
   },
 });
 
+const TOKEN_KEY = "auth_token";
+
+export const tokenStore = {
+  get: (): string | null => {
+    try {
+      return typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set: (token: string) => {
+    try {
+      localStorage.setItem(TOKEN_KEY, token);
+    } catch {}
+  },
+  clear: () => {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+    } catch {}
+  },
+};
+
+// Mobile browsers (Safari/Chrome) block third-party cookies, so also send the
+// JWT as a Bearer header. The backend accepts either the cookie or the header.
+api.interceptors.request.use((config) => {
+  const token = tokenStore.get();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { api } from "@/libs/api";
+import { api, tokenStore } from "@/libs/api";
 
 // Define the shape of our User object based on your backend structure
 interface User {
@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await api.post("/auth/login", { email, password });
+      if (response.data?.token) tokenStore.set(response.data.token);
       setUser(response.data); // Set user in state
       // Students land on the exams page; staff land on the dashboard
       router.push(response.data?.role === "user" ? "/exams" : "/dashboard");
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await api.post("/auth/logout");
+      tokenStore.clear();
       setUser(null);
       router.push("/");
     } catch (error) {
