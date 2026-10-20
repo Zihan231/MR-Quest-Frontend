@@ -22,7 +22,7 @@ export default function ProtectedRoute({
   // Show a loading state while checking the cookie
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-[#0a0a0a]">
+      <div className="flex h-dvh w-full items-center justify-center bg-slate-50 dark:bg-[#0a0a0a]">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
       </div>
     );

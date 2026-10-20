@@ -301,7 +301,7 @@ export default function DashboardLayout({
 
   return (
     <ProtectedRoute>
-      <div className="flex h-screen w-full bg-slate-50 font-sans dark:bg-[#0a0a0a]">
+      <div className="flex h-dvh w-full bg-slate-50 font-sans dark:bg-[#0a0a0a]">
         {/* =======================================================================
           LEFT SIDEBAR (Wrapped in Suspense because of useSearchParams)
           ======================================================================= */}
@@ -314,7 +314,7 @@ export default function DashboardLayout({
           ======================================================================= */}
         <main className="flex flex-1 flex-col overflow-x-hidden">
           {/* Top Header */}
-          <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur-sm dark:border-zinc-800 dark:bg-[#121212]/80 relative z-30">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-4 sm:px-8 backdrop-blur-sm dark:border-zinc-800 dark:bg-[#121212]/80 relative z-30">
             {/* Left side: Mobile hamburger + Desktop empty spacer */}
             <button
               onClick={() => setIsMobileOpen(true)}
@@ -326,7 +326,7 @@ export default function DashboardLayout({
             <div className="hidden lg:block" />
 
             {/* Right Actions */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2 sm:gap-5">
               <div className="flex items-center gap-3 text-slate-400 relative">
                 <NotificationBell />
                 <button
@@ -401,7 +401,7 @@ export default function DashboardLayout({
           </header>
 
           {/* Scrollable Page Content injected here */}
-          <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-8 pt-4 pb-8">
             <div className="mx-auto max-w-6xl">{children}</div>
           </div>
         </main>

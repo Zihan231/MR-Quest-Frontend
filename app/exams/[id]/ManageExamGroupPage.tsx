@@ -722,7 +722,7 @@ export default function ManageExamGroupPage() {
                     </button>
                   </div>
                   <div className="p-6 pb-2 mt-4 flex flex-col gap-3">
-                    <div className="grid grid-cols-3 gap-2.5 mb-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2">
                       <button
                         type="button"
                         onClick={() => setNewQuestion({ ...newQuestion, type: "MCQ" })}
@@ -853,7 +853,7 @@ export default function ManageExamGroupPage() {
                     <div className="px-6 py-4 flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
-                        <div className="grid grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <button
                             type="button"
                             onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "AI" })}
@@ -908,7 +908,7 @@ export default function ManageExamGroupPage() {
                     <div className="px-6 py-4 flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
-                        <div className="grid grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <button
                             type="button"
                             onClick={() => setNewQuestion({ ...newQuestion, evaluationType: "AI" })}
@@ -1084,7 +1084,7 @@ export default function ManageExamGroupPage() {
                           <>
                             <div className="flex flex-col gap-1.5">
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Evaluation Mode</label>
-                              <div className="grid grid-cols-2 gap-2.5">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 <button
                                   type="button"
                                   onClick={() => setEditQuestion({ ...editQuestion, evaluationType: "AI" })}
@@ -1260,7 +1260,7 @@ export default function ManageExamGroupPage() {
                                 {!minimizedDocIds[q.id] && (
                                   <div className={`border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-950 flex flex-col transition-all ${
                                     isFullscreenDocId === q.id 
-                                      ? "fixed inset-0 z-[100] h-screen w-screen p-4 bg-black/80 backdrop-blur-md" 
+                                      ? "fixed inset-0 z-[100] h-dvh w-screen p-4 bg-black/80 backdrop-blur-md" 
                                       : "h-[450px] w-full"
                                   }`}>
                                     <div className="bg-slate-200 dark:bg-zinc-900 px-4 py-2 flex items-center justify-between border-b border-slate-300 dark:border-zinc-800 shrink-0">
@@ -1309,7 +1309,7 @@ export default function ManageExamGroupPage() {
                                 {!minimizedDocIds[q.id] && (
                                   <div className={`border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-950 flex flex-col transition-all ${
                                     isFullscreenDocId === q.id 
-                                      ? "fixed inset-0 z-[100] h-screen w-screen p-4 bg-black/80 backdrop-blur-md" 
+                                      ? "fixed inset-0 z-[100] h-dvh w-screen p-4 bg-black/80 backdrop-blur-md" 
                                       : "h-[450px] w-full"
                                   }`}>
                                     <div className="bg-slate-200 dark:bg-zinc-900 px-4 py-2 flex items-center justify-between border-b border-slate-300 dark:border-zinc-800 shrink-0">

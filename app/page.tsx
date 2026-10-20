@@ -26,7 +26,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 font-sans dark:bg-[#0a0a0a]">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 p-6 font-sans dark:bg-[#0a0a0a]">
       <div className="mb-8 flex flex-col items-center">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
@@ -38,7 +38,7 @@ export default function LoginPage() {
         <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Task Platform</p>
       </div>
 
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-[#121212]">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 shadow-sm dark:border-zinc-800 dark:bg-[#121212]">
         <div className="mb-8 text-center">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-zinc-50">Welcome back</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">Please enter your details to sign in.</p>
@@ -56,7 +56,7 @@ export default function LoginPage() {
             <input
               type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="alex.mercer@company.com"
-              className="w-full rounded-lg border border-slate-300 bg-transparent px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-zinc-700 dark:text-zinc-50 dark:placeholder:text-zinc-500"
+              className="w-full rounded-lg border border-slate-300 bg-transparent px-4 py-3 text-base sm:text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-zinc-700 dark:text-zinc-50 dark:placeholder:text-zinc-500"
             />
           </div>
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
               <input
                 type={showPassword ? "text" : "password"} id="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-slate-300 bg-transparent px-4 py-3 pr-11 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-zinc-700 dark:text-zinc-50 dark:placeholder:text-zinc-500"
+                className="w-full rounded-lg border border-slate-300 bg-transparent px-4 py-3 pr-11 text-base sm:text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-zinc-700 dark:text-zinc-50 dark:placeholder:text-zinc-500"
               />
               <button
                 type="button"

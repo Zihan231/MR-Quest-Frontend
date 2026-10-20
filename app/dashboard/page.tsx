@@ -1272,7 +1272,7 @@ function DashboardPageContent() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-zinc-800 dark:bg-[#121212] shadow-sm">
           <h3 className="font-bold text-slate-900 dark:text-zinc-50 mb-4">Account Profile</h3>
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-400">Full Name</label>
                 <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 mt-0.5">{name}</p>
@@ -1472,7 +1472,7 @@ function DashboardPageContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       {renderViewContent()}
 
 

@@ -252,7 +252,7 @@ export default function ActivityLogPage() {
             <p className="text-xs text-slate-400 py-8 text-center">No activity log entries match your filters.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="min-w-[640px] w-full text-left">
                 <thead className="bg-slate-50 dark:bg-zinc-800/50">
                   <tr>
                     {["Date", "Admin", "Role", "Action", "Target", "Details"].map(h => (

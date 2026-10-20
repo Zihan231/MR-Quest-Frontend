@@ -531,7 +531,7 @@ export function MonitoringDashboard() {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
+                <table className="min-w-[640px] w-full text-left text-sm border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100 text-slate-400 dark:border-zinc-800">
                       <th className="py-3 px-3 font-semibold text-xs uppercase">Level</th>

@@ -45,7 +45,7 @@ export default function TakeExamPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-dvh bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
         <p className="text-sm text-slate-500">Starting task...</p>
       </div>
@@ -54,14 +54,14 @@ export default function TakeExamPage() {
 
   if (!examGroup) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-dvh bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <p className="text-sm text-red-500">Task not found.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <div className="min-h-dvh bg-white dark:bg-[#0a0a0a]">
       <div className="mx-auto max-w-5xl px-4 py-8">
         <ExamGroupPlayer
           examGroupId={examGroupId}

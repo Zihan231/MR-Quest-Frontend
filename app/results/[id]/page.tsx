@@ -48,7 +48,7 @@ export default function ExamResultsDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-dvh bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
         <p className="text-sm text-slate-500">Loading results...</p>
       </div>
@@ -57,7 +57,7 @@ export default function ExamResultsDetailPage() {
 
   if (!examGroup || !submission) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 p-6 text-center">
+      <div className="min-h-dvh bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="text-sm text-red-500 font-semibold">No submission found for this task.</p>
         <button
           onClick={() => router.push("/results")}
@@ -81,7 +81,7 @@ export default function ExamResultsDetailPage() {
       .reduce((sum: number, ans: any) => sum + (ans.question?.marks || 0), 0);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <div className="min-h-dvh bg-white dark:bg-[#0a0a0a]">
       <div className="mx-auto max-w-4xl px-4 py-8 flex flex-col gap-6">
         <button
           onClick={() => router.push("/results")}
