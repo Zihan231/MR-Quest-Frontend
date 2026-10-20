@@ -116,16 +116,16 @@ function TrashCountdown({ initialSeconds, onExpire }: { initialSeconds: number; 
 
 function StatCard({ icon, label, value, accent, tooltip }: { icon: React.ReactNode; label: string; value: any; accent: string; tooltip?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-zinc-800 dark:bg-[#121212] shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-5 dark:border-zinc-800 dark:bg-[#121212] shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
             {tooltip && <InfoTooltip content={tooltip} />}
           </div>
           <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-zinc-50">{value}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ backgroundColor: accent }}>
+        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ backgroundColor: accent }}>
           {icon}
         </div>
       </div>
@@ -135,7 +135,7 @@ function StatCard({ icon, label, value, accent, tooltip }: { icon: React.ReactNo
 
 function Card({ title, subtitle, children, className = "" }: { title?: string; subtitle?: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white p-6 dark:border-zinc-800 dark:bg-[#121212] shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-[#121212] shadow-sm ${className}`}>
       {title && (
         <div className="mb-4">
           <h3 className="font-bold text-slate-900 dark:text-zinc-50">{title}</h3>
@@ -678,7 +678,7 @@ function DashboardPageContent() {
 
         {/* ================= Section C: Needs Attention (amber/red family) ================= */}
         <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 dark:border-amber-500/20 dark:bg-amber-500/5">
-          <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="text-amber-600" size={18} />
               <div className="flex items-center gap-1">
@@ -806,10 +806,10 @@ function DashboardPageContent() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-sm text-slate-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
+            <div className="grid grid-cols-3 items-center gap-2 sm:flex sm:flex-wrap lg:shrink-0">
               <button
                 onClick={() => setIsUsersFiltersOpen((o) => !o)}
-                className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm font-semibold transition shrink-0 ${
+                className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 sm:px-3.5 py-2 text-sm font-semibold transition shrink-0 ${
                   isUsersFiltersOpen
                     ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400"
                     : "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
@@ -828,14 +828,14 @@ function DashboardPageContent() {
                   setUsersPage(1);
                   loadPaginatedUsers(1);
                 }}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="rounded-xl bg-blue-600 px-2 sm:px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 Search
               </button>
               <button
                 onClick={exportUsersCsv}
                 disabled={isExportingUsers}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 shrink-0"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-2 sm:px-4 whitespace-nowrap py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 shrink-0"
               >
                 {isExportingUsers ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />} Export CSV
               </button>
@@ -1135,7 +1135,7 @@ function DashboardPageContent() {
             </div>
           </div>
 
-          <div className="md:hidden flex flex-col gap-3 min-h-[440px]">
+          <div className="md:hidden mt-4 flex flex-col gap-3 min-h-[440px]">
             {isUsersLoading && listToRender.length === 0 ? (
               <div className="flex justify-center items-center gap-2 h-[440px] text-slate-400 text-sm">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />

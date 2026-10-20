@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { WebcamRecorder } from "./WebcamRecorder";
 import { ReferenceDocViewer } from "./ReferenceDocViewer";
 import { sortByType, getTypeAccentClass, getTypeChipClass } from "@/libs/questionSort";
+import { fitDocxToWidth } from "@/libs/fitDocx";
 
 const getAbsoluteDocUrl = (url: string) => {
   if (!url) return "";
@@ -52,7 +53,7 @@ function DocxPreview({ url }: { url: string }) {
             ignoreFonts: false,
             breakPages: true,
           }).then(() => {
-            console.log("Render complete!");
+            if (containerRef.current) fitDocxToWidth(containerRef.current);
           });
         });
       })

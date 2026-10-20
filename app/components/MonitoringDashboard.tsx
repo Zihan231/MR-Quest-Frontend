@@ -34,16 +34,16 @@ function InfoTooltip({ content }: { content: string }) {
 
 function StatCard({ icon, label, value, accent, tooltip }: { icon: React.ReactNode; label: string; value: any; accent: string; tooltip?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-zinc-800 dark:bg-[#121212] shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-5 dark:border-zinc-800 dark:bg-[#121212] shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
             {tooltip && <InfoTooltip content={tooltip} />}
           </div>
           <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-zinc-50">{value}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ backgroundColor: accent }}>
+        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ backgroundColor: accent }}>
           {icon}
         </div>
       </div>
@@ -53,7 +53,7 @@ function StatCard({ icon, label, value, accent, tooltip }: { icon: React.ReactNo
 
 function Card({ title, subtitle, children, className = "", tooltip, id, headerRight }: { title?: string; subtitle?: string; children: React.ReactNode; className?: string; tooltip?: string; id?: string; headerRight?: React.ReactNode }) {
   return (
-    <div id={id} className={`rounded-2xl border border-slate-200 bg-white p-6 dark:border-zinc-800 dark:bg-[#121212] shadow-sm ${className}`}>
+    <div id={id} className={`rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-[#121212] shadow-sm ${className}`}>
       {(title || headerRight) && (
         <div className="mb-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -354,7 +354,7 @@ export function MonitoringDashboard() {
               )}
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Engagement Overview</p>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex w-full flex-col gap-1.5 sm:w-auto">
                   <label className="text-xs font-semibold text-slate-500">Activity Window</label>
                   <select
                     value={days}
@@ -364,7 +364,7 @@ export function MonitoringDashboard() {
                       pendingScrollRef.current = "engagement";
                       loadActivitySection(v);
                     }}
-                    className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 sm:w-auto"
                   >
                     <option value={7}>7 days</option>
                     <option value={30}>30 days</option>

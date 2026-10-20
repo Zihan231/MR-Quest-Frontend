@@ -28,6 +28,7 @@ import {
 import dynamic from "next/dynamic";
 import { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import ExamGroupEvaluationView from "./ExamGroupEvaluationView";
+import { fitDocxToWidth } from "@/libs/fitDocx";
 
 const DocViewer = dynamic(
   () => import("@cyntler/react-doc-viewer"),
@@ -103,7 +104,7 @@ function DocxPreview({ url }: { url: string }) {
             ignoreFonts: false,
             breakPages: true,
           }).then(() => {
-            console.log("Render complete!");
+            if (containerRef.current) fitDocxToWidth(containerRef.current);
           });
         });
       })
