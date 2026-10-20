@@ -402,8 +402,8 @@ export function ExamGroupPlayer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6">
         {questions.map((q: any, idx: number) => (
-          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-3 sm:p-5 shadow-sm`}>
-            <div className="flex items-start gap-3">
+          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-2.5 sm:p-5 shadow-sm`}>
+            <div className="flex items-start gap-2 sm:gap-3">
               <span className="text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 mb-2 leading-relaxed">{q.questionText}</p>
@@ -425,7 +425,7 @@ export function ExamGroupPlayer({
                           <button
                             key={optIdx}
                             onClick={() => selectAnswer(q, optionKey)}
-                            className={`text-left text-base px-5 py-4 rounded-xl border transition flex items-center gap-3 ${
+                            className={`text-left text-base px-3 py-3 sm:px-5 sm:py-4 rounded-xl border transition flex items-center gap-3 ${
                               selected
                                 ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400"
                                 : "border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-slate-700 dark:text-zinc-300"
@@ -500,7 +500,7 @@ export function ExamGroupPlayer({
                       )}
 
                       {/* Video Actions Block */}
-                      <div className="bg-slate-50 dark:bg-zinc-950/50 p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-col sm:flex-row gap-4 items-center">
+                      <div className="bg-slate-50 dark:bg-zinc-950/50 p-3 sm:p-6 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-col sm:flex-row gap-4 items-center">
                         <div className="flex-1 flex flex-col sm:flex-row gap-3 w-full">
                           <button
                             onClick={() => setRecordingQuestionId(q.id)}
