@@ -647,7 +647,7 @@ export default function ManageExamGroupPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-8 animate-fadeIn">
+    <div className="-mx-2 sm:mx-0 flex flex-col gap-6 pb-8 animate-fadeIn">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -735,7 +735,7 @@ export default function ManageExamGroupPage() {
                       <Trash2 size={16} />
                     </button>
                   </div>
-                  <div className="p-6 pb-2 mt-4 flex flex-col gap-3">
+                  <div className="p-4 sm:p-6 pb-2 mt-4 flex flex-col gap-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2">
                       <button
                         type="button"
@@ -796,7 +796,7 @@ export default function ManageExamGroupPage() {
                   </div>
 
                   {newQuestion.type === 'MCQ' && (
-                    <div className="px-6 py-4 flex flex-col gap-3">
+                    <div className="px-4 sm:px-6 py-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Options</p>
                         <div className="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg">
@@ -864,7 +864,7 @@ export default function ManageExamGroupPage() {
                   )}
 
                   {newQuestion.type === 'Video' && (
-                    <div className="px-6 py-4 flex flex-col gap-4">
+                    <div className="px-4 sm:px-6 py-4 flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -919,7 +919,7 @@ export default function ManageExamGroupPage() {
                   )}
 
                   {newQuestion.type === 'CQ' && (
-                    <div className="px-6 py-4 flex flex-col gap-4">
+                    <div className="px-4 sm:px-6 py-4 flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-slate-500 dark:text-zinc-400">Evaluation Mode</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -959,7 +959,7 @@ export default function ManageExamGroupPage() {
                     </div>
                   )}
 
-                  <div className="bg-slate-50 dark:bg-zinc-950/50 border-t border-slate-100 dark:border-zinc-800 p-4 px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="bg-slate-50 dark:bg-zinc-950/50 border-t border-slate-100 dark:border-zinc-800 p-4 px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     {newQuestion.type !== 'Video' ? (
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Marks</span>
@@ -1021,7 +1021,7 @@ export default function ManageExamGroupPage() {
                 {questions.map((q, idx) => (
                   <div
                     key={q.id}
-                    className={`border-l-4 ${getTypeAccentClass(q.type)} rounded-2xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-[#18181b] shadow-sm overflow-hidden p-5 sm:p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700`}
+                    className={`border-l-4 ${getTypeAccentClass(q.type)} rounded-none sm:rounded-2xl border border-r-0 sm:border-r border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-[#18181b] shadow-sm overflow-hidden p-3 sm:p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-700`}
                   >
                     {editingQuestionId === q.id ? (
                       <div className="flex flex-col gap-4">
@@ -1246,7 +1246,7 @@ export default function ManageExamGroupPage() {
                         )}
 
                         {q.type === 'Video' && (
-                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
+                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-2.5 sm:p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-semibold text-slate-500 dark:text-zinc-400">Evaluation Mode:</span>
                               <span className="font-bold text-slate-800 dark:text-zinc-200">{q.evaluationType} Evaluation</span>
@@ -1301,7 +1301,7 @@ export default function ManageExamGroupPage() {
                         )}
 
                         {q.type === 'CQ' && (
-                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
+                          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-zinc-900/50 p-2.5 sm:p-4 rounded-xl border border-slate-100 dark:border-zinc-800">
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-semibold text-slate-500 dark:text-zinc-400">Evaluation Mode:</span>
                               <span className="font-bold text-slate-800 dark:text-zinc-200">{q.evaluationType} Evaluation</span>
