@@ -57,7 +57,7 @@ function DocxPreview({ url }: { url: string }) {
           containerRef.current!.innerHTML = "";
           return renderFn(blob, containerRef.current!, undefined, {
             inWrapper: true,
-            ignoreWidth: false,
+            ignoreWidth: typeof window !== "undefined" && window.innerWidth < 640,
             ignoreHeight: false,
             ignoreFonts: false,
             breakPages: true,
@@ -113,6 +113,10 @@ function DocxPreview({ url }: { url: string }) {
           padding: 32px 24px !important;
           margin-bottom: 24px !important;
           display: block !important;
+        }
+@media (max-width: 640px) {
+          .docx-wrapper { padding: 8px 4px !important; }
+          .docx-wrapper > section.docx { width: 100% !important; min-width: 0 !important; min-height: 0 !important; padding: 16px 12px !important; box-sizing: border-box !important; }
         }
       `}} />
 
@@ -402,13 +406,13 @@ export function ExamGroupPlayer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6">
         {questions.map((q: any, idx: number) => (
-          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-2.5 sm:p-5 shadow-sm`}>
+          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-2.5 sm:p-5 border-r-0 sm:border-r rounded-none sm:rounded-2xl shadow-sm`}>
             <div className="flex items-start gap-2 sm:gap-3">
-              <span className="text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
+              <span className="hidden sm:inline text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 mb-2 leading-relaxed">{q.questionText}</p>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400">{q.marks} marks</span>
+                  <span className="sm:hidden text-[10px] font-bold text-slate-500">Q{idx + 1}</span><span className="text-[10px] text-slate-400">{q.marks} marks</span>
                   <span className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${getTypeChipClass(q.type)}`}>{q.type}</span>
                 </div>
                 <div className="mt-3 flex flex-col gap-2">

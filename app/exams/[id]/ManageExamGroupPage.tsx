@@ -108,7 +108,7 @@ function DocxPreview({ url }: { url: string }) {
           containerRef.current!.innerHTML = "";
           return renderFn(blob, containerRef.current!, undefined, {
             inWrapper: true,
-            ignoreWidth: false,
+            ignoreWidth: typeof window !== "undefined" && window.innerWidth < 640,
             ignoreHeight: false,
             ignoreFonts: false,
             breakPages: true,
@@ -164,6 +164,10 @@ function DocxPreview({ url }: { url: string }) {
           padding: 32px 24px !important;
           margin-bottom: 24px !important;
           display: block !important;
+        }
+@media (max-width: 640px) {
+          .docx-wrapper { padding: 8px 4px !important; }
+          .docx-wrapper > section.docx { width: 100% !important; min-width: 0 !important; min-height: 0 !important; padding: 16px 12px !important; box-sizing: border-box !important; }
         }
       `}} />
 

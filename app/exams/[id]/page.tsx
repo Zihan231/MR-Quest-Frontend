@@ -71,7 +71,7 @@ export default function ExamDetailPage() {
 
   return (
     <div className="min-h-dvh bg-white dark:bg-[#0a0a0a]">
-      <div className="mx-auto max-w-4xl px-0 sm:px-4 py-3 sm:py-8 flex flex-col gap-6">
+      <div className="-mx-2 sm:mx-auto max-w-4xl px-0 sm:px-4 py-3 sm:py-8 flex flex-col gap-6">
         <button
           onClick={() => router.push("/exams")}
           className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 mb-2 self-start"
