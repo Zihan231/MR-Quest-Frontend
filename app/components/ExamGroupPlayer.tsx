@@ -22,6 +22,15 @@ function DocxPreview({ url }: { url: string }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Re-fit rendered pages when the viewer is resized (window resize, fullscreen toggle)
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => fitDocxToWidth(el));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   React.useEffect(() => {
     let active = true;
     setLoading(true);
@@ -77,7 +86,7 @@ function DocxPreview({ url }: { url: string }) {
   }, [url]);
 
   return (
-    <div className="p-4 overflow-auto h-full w-full bg-slate-100 dark:bg-zinc-900 min-h-[350px]">
+    <div className="p-2 sm:p-4 w-full bg-slate-100 dark:bg-zinc-900 min-h-[350px]">
       <style dangerouslySetInnerHTML={{__html: `
         .docx-container-white {
           background-color: #f1f5f9 !important;
@@ -393,10 +402,10 @@ export function ExamGroupPlayer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6">
         {questions.map((q: any, idx: number) => (
-          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm`}>
+          <div key={q.id} className={`border-l-4 ${getTypeAccentClass(q.type)} bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-3 sm:p-5 shadow-sm`}>
             <div className="flex items-start gap-3">
               <span className="text-xs font-bold text-slate-400 mt-0.5">{idx + 1}.</span>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 mb-2 leading-relaxed">{q.questionText}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <span className="text-[10px] text-slate-400">{q.marks} marks</span>
@@ -445,11 +454,11 @@ export function ExamGroupPlayer({
                       className="w-full bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 rounded-xl border border-slate-200 dark:border-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition p-4 resize-none outline-none"
                     />
                   ) : q.type === 'Video' ? (
-                    <div className="flex flex-col gap-4 w-full">
+                    <div className="flex flex-col gap-4 w-full min-w-0">
                       {/* Document Viewer Block */}
                       {q.referenceScript && (
-                        <div className="w-full flex flex-col gap-2">
-                          <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/10 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/20 text-xs">
+                        <div className="w-full min-w-0 flex flex-col gap-2">
+                          <div className="flex items-center justify-between gap-2 bg-blue-50/50 dark:bg-blue-900/10 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/20 text-xs">
                             <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
                               <FileText size={14} /> Reference Doc
                             </span>
@@ -464,20 +473,22 @@ export function ExamGroupPlayer({
                           {!minimizedDocIds[q.id] && (
                             <div className={`border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-950 flex flex-col transition-all ${
                               isFullscreenDocId === q.id 
-                                ? "fixed inset-0 z-[100] h-dvh w-screen p-4 bg-black/80 backdrop-blur-md" 
-                                : "h-[450px] w-full"
+                                ? "fixed inset-0 z-[100] p-2 sm:p-4 bg-black/80 backdrop-blur-md"
+                                : "h-[60dvh] min-h-[320px] max-h-[650px] w-full"
                             }`}>
                               <div className="bg-slate-200 dark:bg-zinc-900 px-4 py-2 flex items-center justify-between border-b border-slate-300 dark:border-zinc-800 shrink-0">
                                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                                   <FileText size={14} /> Reference Doc Preview
                                 </span>
                               </div>
-                              <div className="flex-1 overflow-auto h-full w-full bg-white relative">
-                                {renderFileViewer(getAbsoluteDocUrl(q.referenceScript))}
+                              <div className="relative flex-1 min-h-0 w-full bg-white">
+                                <div className="absolute inset-0 overflow-auto">
+                                  {renderFileViewer(getAbsoluteDocUrl(q.referenceScript))}
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => setIsFullscreenDocId(prev => prev === q.id ? null : q.id)}
-                                  className="absolute bottom-4 right-4 z-10 p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition flex items-center justify-center border border-blue-500 hover:scale-105"
+                                  className="absolute bottom-4 right-6 z-10 p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition flex items-center justify-center border border-blue-500 hover:scale-105"
                                   title={isFullscreenDocId === q.id ? "Exit Fullscreen" : "Fullscreen"}
                                 >
                                   {isFullscreenDocId === q.id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
